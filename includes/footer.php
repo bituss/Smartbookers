@@ -25,10 +25,10 @@
     <div class="footer-links">
       <h4>Iparágak</h4>
       <ul>
-        <li><a href="/Smartbookers/user/kozmetika.php">Kozmetika</a></li>
-        <li><a href="/Smartbookers/user/fodraszat.php">Fodrászat</a></li>
-        <li><a href="/Smartbookers/user/mukorom.php">Műköröm</a></li>
-        <li><a href="/Smartbookers/user/masszazs.php">Masszázs</a></li>
+        <li>Kozmetika</li>
+        <li>Fodrászat</li>
+        <li>Műköröm</li>
+        <li>Masszázs</li>
       </ul>
     </div>
 
