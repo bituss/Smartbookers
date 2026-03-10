@@ -29,7 +29,6 @@
       class="quick-search"
       method="get"
       action="/Smartbookers/public/industry.php">
-      resourcebundle_get_error_message
 
   <div>
     <label for="industry">Iparág választás:</label>
