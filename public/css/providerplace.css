@@ -1,0 +1,18 @@
+body{font-family:Inter,sans-serif;background:#f5f5f5;margin:0;}
+.container{max-width:980px;margin:40px auto;background:#fff;padding:25px;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,0.1);}
+h1{text-align:center;color:#24256e;margin:0 0 8px;}
+.center{text-align:center;}
+.msg{text-align:center;margin:15px 0;font-weight:800;}
+.success{color:#16a34a;}
+.error{color:#ef4444;}
+.notice{background:rgba(239,68,68,.12);color:#ef4444;border-radius:12px;padding:12px 14px;font-weight:900;margin:14px auto;max-width:760px;}
+.btn{display:inline-block;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:900;color:#fff;background:linear-gradient(135deg,#24256e,#000);}
+.btn:hover{opacity:.92}
+form{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0 22px;}
+input,button{padding:10px;border-radius:8px;border:1px solid #ccc;}
+button{background:#24256e;color:#fff;border:none;cursor:pointer;font-weight:800;}
+table{width:100%;border-collapse:collapse;}
+th,td{padding:10px;border:1px solid #ddd;text-align:center;}
+th{background:#24256e;color:#fff;}
+.card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:16px 0;}
+@media(max-width:700px){.container{margin:18px 12px;padding:16px;} th,td{font-size:13px;}}

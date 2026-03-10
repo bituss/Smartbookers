@@ -1,0 +1,121 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: Inter, sans-serif; }
+body{
+  min-height: 100vh;
+  background: linear-gradient(135deg,#24256e,#ffffff);
+  background-attachment: fixed;
+}
+
+
+/* A háttér a main-en van, így nem csúszik el header/footer mellett sem */
+main{
+  min-height: calc(100vh - 140px);
+  padding: 40px 20px 60px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: transparent; /* <-- fontos */
+}
+
+p{
+  font-size: large;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+.card{
+  background: #fff;
+  padding: 38px 30px;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 18px 45px rgba(0,0,0,0.18);
+}
+
+.card h2{
+  text-align: center;
+  margin-bottom: 18px;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color:#24256e;
+}
+
+/* Üzenetek */
+.msg{
+  text-align: center;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.msg.success{
+  border: 1px solid #bbf7d0;
+  background: #eafff1;
+  color: #166534;
+}
+
+/* TAB sor */
+.tabRow{
+  display:flex;
+  gap: 10px;
+  margin: 8px 0 18px;
+}
+
+.tabBtn{
+  flex:1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.tabBtn.active{
+  background: linear-gradient(135deg,#24256e,#000);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* Inputok és selectek */
+.input, .select{
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  font-size: 1rem;
+  outline: none;
+}
+
+.input:focus, .select:focus{
+  border-color: #6a74ff;
+  box-shadow: 0 0 0 4px rgba(106,116,255,.18);
+}
+
+/* SUBMIT gomb (külön osztály, nem "button" globálisan!) */
+.primaryBtn{
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg,#24256e,#000);
+  transition: 0.15s ease;
+}
+
+.primaryBtn:hover{ opacity: 0.92; }
+
+@media (max-width: 500px){
+  main{ padding: 26px 16px 50px; }
+  .card{ padding: 30px 20px; border-radius: 16px; }
+  .card h2{ font-size: 1.55rem; }
+  .primaryBtn{ padding: 12px; font-size: 0.95rem; }
+}

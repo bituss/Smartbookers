@@ -1,0 +1,470 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Gép: 127.0.0.1
+-- Létrehozás ideje: 2026. Feb 22. 22:31
+-- Kiszolgáló verziója: 10.4.28-MariaDB
+-- PHP verzió: 8.2.4
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+--
+-- Adatbázis: `idopont_foglalas`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `bookings`
+--
+
+CREATE TABLE `bookings` (
+  `id` int(11) NOT NULL,
+  `provider_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `booking_time` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `cancelled_at` datetime DEFAULT NULL,
+  `provider_seen` tinyint(1) DEFAULT 0,
+  `is_active` tinyint(1) GENERATED ALWAYS AS (case when `cancelled_at` is null then 1 else 0 end) STORED,
+  `sub_service_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `conversations`
+--
+
+CREATE TABLE `conversations` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `provider_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `industries`
+--
+
+CREATE TABLE `industries` (
+  `id` int(11) NOT NULL,
+  `slug` varchar(64) NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `description` text DEFAULT NULL,
+  `hero_image` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `messages`
+--
+
+CREATE TABLE `messages` (
+  `id` int(11) NOT NULL,
+  `conversation_id` int(11) NOT NULL,
+  `body` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `seen` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `providers`
+--
+
+CREATE TABLE `providers` (
+  `id` int(11) NOT NULL,
+  `business_name` varchar(150) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `telepules_id` int(11) DEFAULT NULL,
+  `industry_id` int(11) DEFAULT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `sub_service_id` int(11) DEFAULT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
+  `bio` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `utca` varchar(150) DEFAULT NULL,
+  `hazszam` varchar(50) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- A tábla adatainak kiíratása `providers`
+--
+
+INSERT INTO `providers` (`id`, `business_name`, `phone`, `telepules_id`, `industry_id`, `service_id`, `sub_service_id`, `avatar`, `bio`, `created_at`, `utca`, `hazszam`, `user_id`) VALUES
+(1, 'KBbeauty', NULL, 1, NULL, 5, NULL, NULL, NULL, '2026-02-20 12:34:30', 'Gácsi út', '30', 6);
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `provider_availability`
+--
+
+CREATE TABLE `provider_availability` (
+  `id` int(11) NOT NULL,
+  `provider_id` int(11) NOT NULL,
+  `slot_date` date NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `slot_minutes` int(11) NOT NULL DEFAULT 60,
+  `sub_service_id` int(11) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- A tábla adatainak kiíratása `provider_availability`
+--
+
+INSERT INTO `provider_availability` (`id`, `provider_id`, `slot_date`, `start_time`, `end_time`, `slot_minutes`, `sub_service_id`, `is_active`, `created_at`) VALUES
+(1, 1, '2026-02-28', '09:00:00', '09:30:00', 30, 18, 1, '2026-02-20 14:06:12');
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `roles`
+--
+
+CREATE TABLE `roles` (
+  `id` int(11) NOT NULL,
+  `name` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- A tábla adatainak kiíratása `roles`
+--
+
+INSERT INTO `roles` (`id`, `name`) VALUES
+(2, 'provider'),
+(1, 'user');
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `services`
+--
+
+CREATE TABLE `services` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- A tábla adatainak kiíratása `services`
+--
+
+INSERT INTO `services` (`id`, `name`) VALUES
+(3, 'Egészség'),
+(1, 'Fodrászat'),
+(5, 'Kozmetikus'),
+(4, 'Masszázs'),
+(2, 'Műköröm');
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `sub_services`
+--
+
+CREATE TABLE `sub_services` (
+  `id` int(11) NOT NULL,
+  `service_id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- A tábla adatainak kiíratása `sub_services`
+--
+
+INSERT INTO `sub_services` (`id`, `service_id`, `name`) VALUES
+(1, 1, 'Női hajvágás'),
+(2, 1, 'Férfi hajvágás'),
+(3, 1, 'Festés'),
+(4, 1, 'Melír'),
+(5, 1, 'Hajmosás + szárítás'),
+(6, 2, 'Gél lakkozás'),
+(7, 2, 'Épített köröm'),
+(8, 2, 'Töltés'),
+(9, 2, 'Eltávolítás'),
+(10, 3, 'Tanácsadás'),
+(11, 3, 'Kontroll'),
+(12, 4, 'Svéd masszázs'),
+(13, 4, 'Relax masszázs'),
+(14, 4, 'Sport masszázs'),
+(15, 5, 'Műszempilla'),
+(16, 5, 'Arckezelés'),
+(17, 5, 'Smink'),
+(18, 5, 'Szemöldök formázás'),
+(19, 5, 'Gyantázás');
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `telepulesek`
+--
+
+CREATE TABLE `telepulesek` (
+  `id` int(11) NOT NULL,
+  `nev` varchar(120) NOT NULL,
+  `iranyitoszam` varchar(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- A tábla adatainak kiíratása `telepulesek`
+--
+
+INSERT INTO `telepulesek` (`id`, `nev`, `iranyitoszam`) VALUES
+(1, 'Bercel', '2687');
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(150) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `avatar` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- A tábla adatainak kiíratása `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role_id`, `created_at`, `avatar`) VALUES
+(1, 'Anna', 'anna@gmail.com', '$2y$10$J45IDrkjr4/YEBUctuZsVugYh/u5tZ9n8Bwb3uNUrIoTSu.MmDqUO', 1, '2026-02-19 18:40:53', NULL),
+(2, 'cica', 'hshd@gmail.com', '$2y$10$LtsdPVILf6ASHjNG1IFqauioRuFizlthKx9CWHyz.FndAY04hECFC', 1, '2026-02-19 18:42:18', NULL),
+(3, 'qwaertzujk', 'biti@gmail.com', '$2y$10$mSnD7u1mZeVT.QO87SP6s.6p.cPYacZlnq3YaLJr93eaEp7dlaO9G', 1, '2026-02-19 18:43:49', NULL),
+(4, 'biti', 'didi@gmail.com', '$2y$10$TMQNNp4jv5UAq8RU0okkguoNcNvw38W4drEdbZuEdsep2U5tffHmq', 1, '2026-02-19 18:47:18', NULL),
+(5, 'Gazsó Norbert', 'gazsonorbi@gmail.com', '$2y$10$Pti7MHS7lqGaR8CVvp9NH.fe6gZ3.MknwZZBUuxLGhyug00h3Lvqm', 1, '2026-02-20 07:26:35', '/Smartbookers/public/images/avatars/a3.png'),
+(6, 'Koplányi Bítia Anna', 'bituss@icloud.com', '$2y$10$f2UZyH5/.9EGjo7fKQEjKe823NhRyRDzVUL/gEdEHOVI3DwNtbKjC', 2, '2026-02-20 12:34:30', NULL);
+
+--
+-- Indexek a kiírt táblákhoz
+--
+
+--
+-- A tábla indexei `bookings`
+--
+ALTER TABLE `bookings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_provider_time_active` (`provider_id`,`booking_time`,`is_active`),
+  ADD KEY `provider_id` (`provider_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `bookings_ibfk_sub_service` (`sub_service_id`);
+
+--
+-- A tábla indexei `conversations`
+--
+ALTER TABLE `conversations`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_conv` (`user_id`,`provider_id`),
+  ADD KEY `provider_id` (`provider_id`);
+
+--
+-- A tábla indexei `industries`
+--
+ALTER TABLE `industries`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `slug` (`slug`);
+
+--
+-- A tábla indexei `messages`
+--
+ALTER TABLE `messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `conversation_id` (`conversation_id`);
+
+--
+-- A tábla indexei `providers`
+--
+ALTER TABLE `providers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `industry_id` (`industry_id`),
+  ADD KEY `sub_service_id` (`sub_service_id`),
+  ADD KEY `telepules_id` (`telepules_id`),
+  ADD KEY `providers_ibfk_user` (`user_id`),
+  ADD KEY `providers_ibfk_service` (`service_id`);
+
+--
+-- A tábla indexei `provider_availability`
+--
+ALTER TABLE `provider_availability`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `provider_id` (`provider_id`),
+  ADD KEY `slot_date` (`slot_date`),
+  ADD KEY `fk_provider_availability_sub` (`sub_service_id`);
+
+--
+-- A tábla indexei `roles`
+--
+ALTER TABLE `roles`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
+
+--
+-- A tábla indexei `services`
+--
+ALTER TABLE `services`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
+
+--
+-- A tábla indexei `sub_services`
+--
+ALTER TABLE `sub_services`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `service_id` (`service_id`);
+
+--
+-- A tábla indexei `telepulesek`
+--
+ALTER TABLE `telepulesek`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- A tábla indexei `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `role_id` (`role_id`);
+
+--
+-- A kiírt táblák AUTO_INCREMENT értéke
+--
+
+--
+-- AUTO_INCREMENT a táblához `bookings`
+--
+ALTER TABLE `bookings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT a táblához `conversations`
+--
+ALTER TABLE `conversations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT a táblához `industries`
+--
+ALTER TABLE `industries`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT a táblához `messages`
+--
+ALTER TABLE `messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT a táblához `providers`
+--
+ALTER TABLE `providers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT a táblához `provider_availability`
+--
+ALTER TABLE `provider_availability`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT a táblához `roles`
+--
+ALTER TABLE `roles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT a táblához `services`
+--
+ALTER TABLE `services`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT a táblához `sub_services`
+--
+ALTER TABLE `sub_services`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+
+--
+-- AUTO_INCREMENT a táblához `telepulesek`
+--
+ALTER TABLE `telepulesek`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT a táblához `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- Megkötések a kiírt táblákhoz
+--
+
+--
+-- Megkötések a táblához `bookings`
+--
+ALTER TABLE `bookings`
+  ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`provider_id`) REFERENCES `providers` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `bookings_ibfk_sub_service` FOREIGN KEY (`sub_service_id`) REFERENCES `sub_services` (`id`);
+
+--
+-- Megkötések a táblához `conversations`
+--
+ALTER TABLE `conversations`
+  ADD CONSTRAINT `conversations_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `conversations_ibfk_2` FOREIGN KEY (`provider_id`) REFERENCES `providers` (`id`) ON DELETE CASCADE;
+
+--
+-- Megkötések a táblához `messages`
+--
+ALTER TABLE `messages`
+  ADD CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE CASCADE;
+
+--
+-- Megkötések a táblához `providers`
+--
+ALTER TABLE `providers`
+  ADD CONSTRAINT `providers_ibfk_1` FOREIGN KEY (`industry_id`) REFERENCES `industries` (`id`),
+  ADD CONSTRAINT `providers_ibfk_2` FOREIGN KEY (`sub_service_id`) REFERENCES `sub_services` (`id`),
+  ADD CONSTRAINT `providers_ibfk_3` FOREIGN KEY (`telepules_id`) REFERENCES `telepulesek` (`id`),
+  ADD CONSTRAINT `providers_ibfk_service` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`),
+  ADD CONSTRAINT `providers_ibfk_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Megkötések a táblához `provider_availability`
+--
+ALTER TABLE `provider_availability`
+  ADD CONSTRAINT `fk_provider_availability_sub` FOREIGN KEY (`sub_service_id`) REFERENCES `sub_services` (`id`) ON DELETE SET NULL;
+
+--
+-- Megkötések a táblához `sub_services`
+--
+ALTER TABLE `sub_services`
+  ADD CONSTRAINT `sub_services_ibfk_1` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`) ON DELETE CASCADE;
+
+--
+-- Megkötések a táblához `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
+COMMIT;
