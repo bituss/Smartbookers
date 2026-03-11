@@ -122,16 +122,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
     ");
     $st->bind_param("ii", $bookingId, $user_id);
 
-    if ($st->execute()) {
-      if ($st->affected_rows > 0) {
-          $success = "Foglalás lemondva.";
-      } else {
-          $error = "Nem sikerült lemondani az időpontot. Lehet, hogy már le lett mondva, vagy nem a te foglalásod.";
-      }
-  } else {
-      // Ha maga az SQL hibás vagy nem fut le
-      $error = "SQL hiba: " . $st->error;
-  }
+    if ($st->execute() && $st->affected_rows > 0) {
+      $success = "Foglalás lemondva.";
+    } else {
+      $error = "Nem sikerült lemondani az időpontot.";
+    }
   }
 }
 
