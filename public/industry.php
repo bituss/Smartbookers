@@ -103,6 +103,11 @@ $sql = "
     p.business_name,
     COALESCE(NULLIF(p.avatar,''), ?) AS provider_avatar,
     COALESCE(NULLIF(p.bio,''), '') AS bio,
+    CONCAT(
+        COALESCE(p.utca,''), ' ',
+        COALESCE(p.hazszam,''), ', ',
+        COALESCE(t.nev,'')
+    ) AS location,  -- <-- ide jön a helyszín
 
     a.id AS availability_id,
     a.slot_date,
@@ -113,7 +118,8 @@ $sql = "
   FROM provider_availability a
   JOIN providers p
     ON p.id = a.provider_id
-
+  LEFT JOIN telepulesek t
+    ON t.id = p.telepules_id
   LEFT JOIN bookings b
     ON b.provider_id = p.id
    AND b.booking_time = CONCAT(a.slot_date, ' ', a.start_time)
@@ -128,7 +134,6 @@ $sql = "
 
   ORDER BY a.sub_service_id ASC, p.business_name ASC, a.slot_date ASC, a.start_time ASC
 ";
-
 if ($subFilterId > 0) {
   $st = $mysqli->prepare($sql);
   $st->bind_param("sii", $defaultAvatar, $serviceId, $subFilterId);
@@ -152,6 +157,7 @@ while ($row = $res->fetch_assoc()) {
       'business_name' => $row['business_name'],
       'avatar' => $row['provider_avatar'] ?: $defaultAvatar,
       'bio' => $row['bio'],
+      'location' => $row['location'], // <-- ide jött
       'slots' => []
     ];
   }
@@ -297,6 +303,9 @@ IPARÁG
                   <div class="meta">
                     <p class="name"><?= htmlspecialchars($p['business_name'], ENT_QUOTES, 'UTF-8') ?></p>
                     <p class="bio"><?= htmlspecialchars($p['bio'] ?: 'Bemutatkozás hamarosan.', ENT_QUOTES, 'UTF-8') ?></p>
+                    <p class="location" style="font-size:13px;color:#64748b;font-weight:700;">
+  <?= htmlspecialchars($p['location'], ENT_QUOTES, 'UTF-8') ?>
+</p>
                   </div>
                 </div>
 
