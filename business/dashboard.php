@@ -135,6 +135,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       </select>
 
       <input type="email" name="email" placeholder="Email cím" required>
+      
       <input type="password" name="password" placeholder="Jelszó" required>
 
       <button type="submit">Regisztráció</button>

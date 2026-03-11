@@ -150,7 +150,7 @@ include '../includes/header.php';
       <p>Email cím: 🞴</p>
       <input class="input" type="email" name="email" placeholder="Email cím" required>
       <p>Telefonszám: 🞴</p>
-      <input class="input" type="phone" name="phone" placeholder="Telefonszám" required>
+      <input class="input" type="tel" name="phone" placeholder="Telefonszám" pattern="[0-9]{9,15}" required>
       <p>Jelszó: 🞴</p>
       <input class="input" type="password" name="password" placeholder="Jelszó (min. 6 karakter)" required>
       <p>Jelszó megerősítése: 🞴</p>

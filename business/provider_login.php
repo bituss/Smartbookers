@@ -287,9 +287,14 @@ include '../includes/header.php';
       <p>Házszám: 🞴</p>
       <input class="input" type="text" name="hazszam" required>
 
+      <p>Telefonszám: 🞴</p>
+      <input  class="input" type="tel" name="phone" placeholder="Telefonszám" pattern="[0-9]{9,15}" required>
+
+
       <p>Email cím: 🞴</p>
       <input class="input" type="email" name="email" required>
 
+      
       <p>Jelszó: 🞴</p>
       <input class="input" type="password" name="password" placeholder="Min. 6, nagybetű + szám + speciális" required>
 
