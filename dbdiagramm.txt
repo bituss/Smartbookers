@@ -1,0 +1,108 @@
+Table bookings {
+  id int [pk, increment]
+  provider_id int [ref: > providers.id]
+  user_id int [ref: > users.id, null]
+  booking_time datetime
+  created_at timestamp
+  cancelled_at datetime [null]
+  provider_seen tinyint
+  is_active tinyint
+  sub_service_id int [ref: > sub_services.id, null]
+  Indexes {
+    (provider_id, booking_time, is_active) [unique]
+  }
+}
+
+Table conversations {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  provider_id int [ref: > providers.id]
+  created_at timestamp
+  Indexes {
+    (user_id, provider_id) [unique]
+  }
+}
+
+Table industries {
+  id int [pk, increment]
+  slug varchar(64) [unique]
+  name varchar(120)
+  description text [null]
+  hero_image varchar(255) [null]
+  is_active tinyint
+}
+
+Table messages {
+  id int [pk, increment]
+  conversation_id int [ref: > conversations.id]
+  body text
+  created_at timestamp
+  seen tinyint
+  seen_by_user tinyint
+  seen_by_provider tinyint
+  sender_role enum('user','provider','system')
+  sender_user_id int [null]
+  sender_provider_id int [null]
+  booking_id int [null]
+  type enum('text','booking_auto')
+}
+
+Table providers {
+  id int [pk, increment]
+  business_name varchar(150) [null]
+  phone varchar(50) [null]
+  telepules_id int [ref: > telepulesek.id, null]
+  industry_id int [ref: > industries.id, null]
+  service_id int [ref: > services.id, null]
+  sub_service_id int [ref: > sub_services.id, null]
+  avatar varchar(255) [null]
+  bio text [null]
+  created_at timestamp
+  utca varchar(150) [null]
+  hazszam varchar(50) [null]
+  user_id int [ref: > users.id, null]
+}
+
+Table provider_availability {
+  id int [pk, increment]
+  provider_id int [ref: > providers.id]
+  slot_date date
+  start_time time
+  end_time time
+  slot_minutes int
+  sub_service_id int [ref: > sub_services.id, null]
+  is_active tinyint
+  created_at timestamp
+}
+
+Table roles {
+  id int [pk, increment]
+  name varchar(50) [unique]
+}
+
+Table services {
+  id int [pk, increment]
+  name varchar(100) [unique]
+}
+
+Table sub_services {
+  id int [pk, increment]
+  service_id int [ref: > services.id]
+  name varchar(100)
+}
+
+Table telepulesek {
+  id int [pk, increment]
+  nev varchar(120)
+  iranyitoszam varchar(10)
+}
+
+Table users {
+  id int [pk, increment]
+  name varchar(100)
+  email varchar(150) [unique]
+  password varchar(255)
+  role_id int [ref: > roles.id]
+  created_at timestamp
+  avatar varchar(255) [null]
+}
