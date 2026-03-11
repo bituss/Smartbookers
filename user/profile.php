@@ -117,7 +117,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
           provider_seen = 0
       WHERE id = ?
         AND user_id = ?
-        AND cancelled_at IS NULL
       LIMIT 1
     ");
     $st->bind_param("ii", $bookingId, $user_id);
@@ -125,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
     if ($st->execute() && $st->affected_rows > 0) {
       $success = "Foglalás lemondva.";
     } else {
-      $error = "Nem sikerült lemondani az időpontot.";
+      $error = "Nem sikerült lemondani (lehet már le volt mondva vagy lejárt).";
     }
   }
 }
