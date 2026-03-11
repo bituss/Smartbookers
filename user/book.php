@@ -129,7 +129,7 @@ try {
       INSERT IGNORE INTO messages
         (conversation_id, body, sender_role, booking_id, type, seen_by_user, seen_by_provider)
       VALUES
-        (?, ?, 'system', ?, 'booking_auto', 1, 0)
+        (?, ?, 'user', ?, 'booking_auto', 1, 0)
     ");
     $msg->bind_param("isi", $conversationId, $txt, $bookingId);
   } else {
@@ -148,8 +148,7 @@ try {
 
   $mysqli->commit();
 
-  // ✅ Ettől “felugrik” (megnyílik) a chat közvetlenül foglalás után
-  header("Location: /Smartbookers/chat/chat.php?conversation_id=" . $conversationId);
+  header("Location: /Smartbookers/user/dashboard.php?success=1");
   exit;
 
 } catch (Throwable $e) {

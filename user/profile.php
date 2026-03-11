@@ -118,16 +118,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
       WHERE id = ?
         AND user_id = ?
         AND cancelled_at IS NULL
-        AND booking_time >= NOW()
       LIMIT 1
     ");
     $st->bind_param("ii", $bookingId, $user_id);
 
-    if ($st->execute() && $st->affected_rows > 0) {
-      $success = "Foglalás lemondva.";
-    } else {
-      $error = "Nem sikerült lemondani (lehet már le volt mondva vagy lejárt).";
-    }
+    if ($st->execute()) {
+      if ($st->affected_rows > 0) {
+          $success = "Foglalás lemondva.";
+      } else {
+          $error = "Nem sikerült lemondani az időpontot. Lehet, hogy már le lett mondva, vagy nem a te foglalásod.";
+      }
+  } else {
+      // Ha maga az SQL hibás vagy nem fut le
+      $error = "SQL hiba: " . $st->error;
+  }
   }
 }
 

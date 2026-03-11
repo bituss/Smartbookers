@@ -185,8 +185,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_avatar'])) {
             if ($u->execute()) {
               $success = "Profilkép frissítve!";
               $currentAvatar = $newWebPath;
+            
+              // SESSION FRISSÍTÉ
 
-              $_SESSION['provider_avatar'] = $newWebPath;
+              $_SESSION['avatar'] = $newWebPath;
             } else {
               $error = "DB mentés hiba.";
             }
