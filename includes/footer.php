@@ -16,7 +16,6 @@
       <ul>
         <li><a href="/Smartbookers/public/index.php">Főoldal</a></li>
         <li><a href="#features">Funkciók</a></li>
-        <li><a href="/Smartbookers/public/pricing.php">Árak</a></li>
         <li><a href="/Smartbookers/public/contact.php">Kapcsolat</a></li>
       </ul>
     </div>
@@ -25,11 +24,12 @@
     <div class="footer-links">
       <h4>Iparágak</h4>
       <ul>
-        <li>Kozmetika</li>
-        <li>Fodrászat</li>
-        <li>Műköröm</li>
-        <li>Masszázs</li>
+      <li><a href="/Smartbookers/public/industry.php?slug=kozmetika"> Kozmetika </a></li>
+        <li><a  href="/Smartbookers/public/industry.php?slug=fodraszat"> Fodrászat </a></li>
+        <li> <a href="/Smartbookers/public/industry.php?slug=mukorom">Műköröm </a></li>
+        <li> <a href="/Smartbookers/public/industry.php?slug=masszazs">Masszázs</a></li>
       </ul>
+      
     </div>
 
     <!-- Legal -->
