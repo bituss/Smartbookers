@@ -290,6 +290,40 @@ $slots = [];
 /* =========================
    Naptár adatok
 ========================= */
+/* ===== Slot részletek popuphoz ===== */
+
+$calendarSlots = [];
+
+$stmt = $mysqli->prepare("
+SELECT 
+pa.slot_date,
+pa.start_time,
+pa.end_time,
+CASE WHEN b.id IS NOT NULL AND b.cancelled_at IS NULL THEN 1 ELSE 0 END as booked
+FROM provider_availability pa
+LEFT JOIN bookings b
+ON DATE(b.booking_time)=pa.slot_date
+AND TIME(b.booking_time)=pa.start_time
+AND b.provider_id=pa.provider_id
+WHERE pa.provider_id=?
+ORDER BY pa.slot_date, pa.start_time
+");
+
+$stmt->bind_param("i",$provider_id);
+$stmt->execute();
+$res=$stmt->get_result();
+
+while($row=$res->fetch_assoc()){
+
+$d=$row['slot_date'];
+
+$calendarSlots[$d][]=[
+"start"=>substr($row['start_time'],0,5),
+"end"=>substr($row['end_time'],0,5),
+"booked"=>$row['booked']
+];
+
+}
 
 $calendarDays = [];
 
@@ -543,6 +577,21 @@ font-size:12px;
 }
 
 }
+.popupSlot{
+padding:8px;
+margin:6px 0;
+border-bottom:1px solid #eee;
+}
+
+.slotFree{
+color:#2196F3;
+font-weight:700;
+}
+
+.slotBooked{
+color:#4CAF50;
+font-weight:700;
+}
   </style>
 </head>
 <body>
@@ -754,6 +803,7 @@ Lemondások megjelölése olvasottnak
 </div>
 <script>
   const calendarData = <?= json_encode($calendarDays) ?>;
+  const calendarSlots = <?= json_encode($calendarSlots) ?>;
 let rangeIndex = 1;
 const BREAK_MIN = 15;
 
@@ -909,7 +959,8 @@ cal.appendChild(empty);
 }
 
 for(let d=1; d<=last.getDate(); d++){
-
+  let today = new Date();
+  let thisDate = new Date(currentYear, currentMonth, d);
 let dateStr =
 currentYear+"-"+String(currentMonth+1).padStart(2,'0')+"-"+String(d).padStart(2,'0');
 
@@ -934,7 +985,16 @@ div.classList.add("calNone");
 
 div.innerText=d;
 
-div.onclick=()=>openPopup(dateStr);
+if(thisDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())){
+    
+    div.classList.add("calNone");
+    div.style.cursor="default";
+
+}else{
+
+    div.onclick=()=>openPopup(dateStr);
+
+}
 
 cal.appendChild(div);
 
@@ -970,23 +1030,37 @@ renderCalendar();
 
 function openPopup(date){
 
-document.getElementById("dayPopup").style.display="flex";
-
 document.getElementById("popupDate").innerText=date;
 
-if(calendarData[date]){
+let box=document.getElementById("popupInfo");
 
-let data=calendarData[date];
-
-document.getElementById("popupInfo").innerHTML=
-"Idősávok: "+data.slots+"<br>Foglalások: "+data.booked;
-
+if(!calendarSlots[date]){
+box.innerHTML="Nincs megadott idősáv erre a napra.";
 }else{
 
-document.getElementById("popupInfo").innerHTML=
-"Nincs felvett idősáv";
+let html="";
+
+calendarSlots[date].forEach(slot=>{
+
+html += "<div class='popupSlot'>";
+
+html += "<strong>"+slot.start+" - "+slot.end+"</strong>";
+
+if(slot.booked>0){
+html += " <span class='slotBooked'>Foglalt</span>";
+}else{
+html += " <span class='slotFree'>Szabad</span>";
+}
+
+html += "</div>";
+
+});
+
+box.innerHTML=html;
 
 }
+
+document.getElementById("dayPopup").style.display="flex";
 
 }
 
