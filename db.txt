@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2026. Már 11. 12:17
--- Kiszolgáló verziója: 10.4.32-MariaDB
--- PHP verzió: 8.1.25
+-- Létrehozás ideje: 2026. Már 16. 22:49
+-- Kiszolgáló verziója: 10.4.28-MariaDB
+-- PHP verzió: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -38,24 +38,24 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `provider_id`, `user_id`, `booking_time`, `created_at`, `cancelled_at`, `provider_seen`, `sub_service_id`) VALUES
-(1, 2, 5, '2026-03-06 12:15:00', '2026-02-25 09:32:57', '2026-02-25 10:38:34', 1, 11),
-(2, 1, 5, '2026-02-28 09:00:00', '2026-02-25 09:36:07', '2026-02-25 10:42:25', 0, 18),
-(3, 2, 5, '2026-08-01 05:00:00', '2026-02-25 09:36:14', '2026-02-25 10:42:27', 1, 10),
-(4, 2, 5, '2026-02-27 13:45:00', '2026-02-26 07:51:24', '2026-02-26 09:07:51', 1, 10),
-(5, 2, 5, '2026-02-27 13:45:00', '2026-02-26 08:08:02', NULL, 0, 10),
-(6, 1, 5, '2026-02-28 09:00:00', '2026-02-26 08:10:48', NULL, 0, 18),
-(7, 2, 5, '2026-02-26 13:15:00', '2026-02-26 08:14:16', '2026-02-26 10:21:47', 1, 11),
-(8, 2, 5, '2026-02-26 15:15:00', '2026-02-26 08:22:38', '2026-02-26 10:21:49', 1, 35),
-(9, 2, 5, '2026-03-01 11:30:00', '2026-02-26 08:29:41', '2026-02-26 09:40:46', 1, 36),
-(16, 2, 5, '2026-03-01 11:30:00', '2026-02-26 09:53:34', NULL, 0, 36),
-(19, 2, 5, '2026-03-03 12:00:00', '2026-03-03 07:58:19', '2026-03-03 08:59:21', 1, 35),
-(20, 2, 5, '2026-03-05 12:00:00', '2026-03-03 08:02:04', '2026-03-03 09:02:21', 1, 11),
-(21, 3, 5, '2026-06-20 08:00:00', '2026-03-10 08:38:39', '2026-03-11 09:52:53', 0, 10),
-(25, 2, 5, '2026-03-13 11:30:00', '2026-03-11 08:34:20', '2026-03-11 10:07:00', 1, 11),
-(26, 2, 5, '2026-04-04 11:30:00', '2026-03-11 08:37:37', '2026-03-11 09:52:51', 1, 36),
-(29, 2, 5, '2026-03-20 14:45:00', '2026-03-11 08:46:27', '2026-03-11 09:52:48', 1, 36),
-(30, 2, 5, '2026-08-01 05:00:00', '2026-03-11 09:42:01', '2026-03-11 10:52:14', 0, 10),
-(31, 2, 5, '2026-03-20 14:45:00', '2026-03-11 09:44:13', '2026-03-11 10:52:12', 0, 36);
+(1, 2, 5, '2026-03-06 12:15:00', '2026-02-25 08:32:57', '2026-02-25 10:38:34', 1, 11),
+(2, 1, 5, '2026-02-28 09:00:00', '2026-02-25 08:36:07', '2026-02-25 10:42:25', 0, 18),
+(3, 2, 5, '2026-08-01 05:00:00', '2026-02-25 08:36:14', '2026-02-25 10:42:27', 1, 10),
+(4, 2, 5, '2026-02-27 13:45:00', '2026-02-26 06:51:24', '2026-02-26 09:07:51', 1, 10),
+(5, 2, 5, '2026-02-27 13:45:00', '2026-02-26 07:08:02', NULL, 0, 10),
+(6, 1, 5, '2026-02-28 09:00:00', '2026-02-26 07:10:48', NULL, 0, 18),
+(7, 2, 5, '2026-02-26 13:15:00', '2026-02-26 07:14:16', '2026-02-26 10:21:47', 1, 11),
+(8, 2, 5, '2026-02-26 15:15:00', '2026-02-26 07:22:38', '2026-02-26 10:21:49', 1, 35),
+(9, 2, 5, '2026-03-01 11:30:00', '2026-02-26 07:29:41', '2026-02-26 09:40:46', 1, 36),
+(16, 2, 5, '2026-03-01 11:30:00', '2026-02-26 08:53:34', NULL, 0, 36),
+(19, 2, 5, '2026-03-03 12:00:00', '2026-03-03 06:58:19', '2026-03-03 08:59:21', 1, 35),
+(20, 2, 5, '2026-03-05 12:00:00', '2026-03-03 07:02:04', '2026-03-03 09:02:21', 1, 11),
+(21, 3, 5, '2026-06-20 08:00:00', '2026-03-10 07:38:39', '2026-03-11 09:52:53', 0, 10),
+(25, 2, 5, '2026-03-13 11:30:00', '2026-03-11 07:34:20', '2026-03-11 10:07:00', 1, 11),
+(26, 2, 5, '2026-04-04 11:30:00', '2026-03-11 07:37:37', '2026-03-11 09:52:51', 1, 36),
+(29, 2, 5, '2026-03-20 14:45:00', '2026-03-11 07:46:27', '2026-03-11 09:52:48', 1, 36),
+(30, 2, 5, '2026-08-01 05:00:00', '2026-03-11 08:42:01', '2026-03-11 10:52:14', 1, 10),
+(31, 2, 5, '2026-03-20 14:45:00', '2026-03-11 08:44:13', '2026-03-11 10:52:12', 1, 36);
 
 -- --------------------------------------------------------
 
@@ -75,9 +75,9 @@ CREATE TABLE `conversations` (
 --
 
 INSERT INTO `conversations` (`id`, `user_id`, `provider_id`, `created_at`) VALUES
-(1, 5, 2, '2026-02-26 08:26:40'),
-(3, 5, 1, '2026-02-26 08:34:02'),
-(15, 5, 3, '2026-03-10 08:38:39');
+(1, 5, 2, '2026-02-26 07:26:40'),
+(3, 5, 1, '2026-02-26 07:34:02'),
+(15, 5, 3, '2026-03-10 07:38:39');
 
 -- --------------------------------------------------------
 
@@ -131,26 +131,26 @@ CREATE TABLE `messages` (
 --
 
 INSERT INTO `messages` (`id`, `conversation_id`, `body`, `created_at`, `seen`, `seen_by_user`, `seen_by_provider`, `sender_role`, `sender_user_id`, `sender_provider_id`, `booking_id`, `type`) VALUES
-(1, 1, 'Szia! Lefoglaltam egy időpontot: 2026-02-27 13:45', '2026-02-26 08:28:04', 0, 0, 1, 'user', 5, NULL, 4, 'booking_auto'),
-(2, 1, 'gvzgzu', '2026-02-26 08:30:49', 0, 1, 1, 'user', 5, NULL, NULL, 'text'),
-(3, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-03-06 12:15\nSzolgáltatás: Kontroll\nSzolgáltató: Egészségesség', '2026-02-26 08:34:48', 0, 0, 1, 'user', 5, NULL, 1, 'booking_auto'),
-(4, 3, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-28 09:00\nSzolgáltatás: Szemöldök formázás\nSzolgáltató: KBbeauty', '2026-02-26 08:34:48', 0, 0, 0, 'user', 5, NULL, 2, 'booking_auto'),
-(5, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-08-01 05:00\nSzolgáltatás: Tanácsadás\nSzolgáltató: Egészségesség', '2026-02-26 08:34:48', 0, 0, 1, 'user', 5, NULL, 3, 'booking_auto'),
-(6, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-27 13:45\nSzolgáltatás: Tanácsadás\nSzolgáltató: Egészségesség', '2026-02-26 08:34:48', 0, 0, 1, 'user', 5, NULL, 5, 'booking_auto'),
-(7, 3, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-28 09:00\nSzolgáltatás: Szemöldök formázás\nSzolgáltató: KBbeauty', '2026-02-26 08:34:48', 0, 0, 0, 'user', 5, NULL, 6, 'booking_auto'),
-(8, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-26 13:15\nSzolgáltatás: Kontroll\nSzolgáltató: Egészségesség', '2026-02-26 08:34:48', 0, 0, 1, 'user', 5, NULL, 7, 'booking_auto'),
-(9, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-26 15:15\nSzolgáltatás: Dietetika\nSzolgáltató: Egészségesség', '2026-02-26 08:34:48', 0, 0, 1, 'user', 5, NULL, 8, 'booking_auto'),
-(10, 1, 'Szia!\nLefoglaltam egy időpontot.\nIdőpont: 2026-03-05 12:00\nSzolgáltatás: Kontroll\nSzolgáltató: Egészségesség', '2026-02-26 08:34:48', 0, 1, 1, 'user', 5, NULL, 20, 'booking_auto'),
-(11, 15, 'Szia!\nLefoglaltam egy időpontot.\nIdőpont: 2026-06-20 08:00\nSzolgáltatás: Tanácsadás\nSzolgáltató: NemLopomAFát', '2026-03-10 08:38:39', 0, 0, 0, 'user', 5, NULL, 21, 'booking_auto'),
-(12, 15, 'szeretném kitanulni a becsületes fa eltulajdonítást!', '2026-03-10 08:39:17', 0, 1, 0, 'user', 5, NULL, NULL, 'text'),
-(13, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Tanácsadás\nIdőpont: 2026-08-01 05:00', '2026-03-10 08:39:41', 0, 1, 0, 'system', NULL, NULL, 22, 'booking_auto'),
-(14, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Tanácsadás\nIdőpont: 2026-08-01 15:00', '2026-03-10 08:40:05', 0, 1, 0, 'system', NULL, NULL, 23, 'booking_auto'),
-(15, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Kontroll\nIdőpont: 2026-03-13 11:30', '2026-03-11 08:30:23', 0, 1, 0, 'system', NULL, NULL, 24, 'booking_auto'),
-(16, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Kontroll\nIdőpont: 2026-03-13 11:30', '2026-03-11 08:34:20', 0, 1, 0, 'system', NULL, NULL, 25, 'booking_auto'),
-(17, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Gyógytorna\nIdőpont: 2026-04-04 11:30', '2026-03-11 08:37:37', 0, 1, 0, 'system', NULL, NULL, 26, 'booking_auto'),
-(18, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Gyógytorna\nIdőpont: 2026-03-20 14:45', '2026-03-11 08:46:27', 0, 1, 1, 'user', NULL, NULL, 29, 'booking_auto'),
-(19, 1, 'oki', '2026-03-11 08:47:00', 0, 1, 1, 'provider', 2, NULL, NULL, 'text'),
-(20, 1, 'Szia!\nLefoglaltam egy időpontot.\nIdőpont: 2026-03-20 14:45\nSzolgáltatás: Gyógytorna\nSzolgáltató: Egészségesség', '2026-03-11 09:42:01', 0, 1, 0, 'user', 5, NULL, 31, 'booking_auto');
+(1, 1, 'Szia! Lefoglaltam egy időpontot: 2026-02-27 13:45', '2026-02-26 07:28:04', 0, 0, 1, 'user', 5, NULL, 4, 'booking_auto'),
+(2, 1, 'gvzgzu', '2026-02-26 07:30:49', 0, 1, 1, 'user', 5, NULL, NULL, 'text'),
+(3, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-03-06 12:15\nSzolgáltatás: Kontroll\nSzolgáltató: Egészségesség', '2026-02-26 07:34:48', 0, 0, 1, 'user', 5, NULL, 1, 'booking_auto'),
+(4, 3, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-28 09:00\nSzolgáltatás: Szemöldök formázás\nSzolgáltató: KBbeauty', '2026-02-26 07:34:48', 0, 0, 0, 'user', 5, NULL, 2, 'booking_auto'),
+(5, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-08-01 05:00\nSzolgáltatás: Tanácsadás\nSzolgáltató: Egészségesség', '2026-02-26 07:34:48', 0, 0, 1, 'user', 5, NULL, 3, 'booking_auto'),
+(6, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-27 13:45\nSzolgáltatás: Tanácsadás\nSzolgáltató: Egészségesség', '2026-02-26 07:34:48', 0, 0, 1, 'user', 5, NULL, 5, 'booking_auto'),
+(7, 3, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-28 09:00\nSzolgáltatás: Szemöldök formázás\nSzolgáltató: KBbeauty', '2026-02-26 07:34:48', 0, 0, 0, 'user', 5, NULL, 6, 'booking_auto'),
+(8, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-26 13:15\nSzolgáltatás: Kontroll\nSzolgáltató: Egészségesség', '2026-02-26 07:34:48', 0, 0, 1, 'user', 5, NULL, 7, 'booking_auto'),
+(9, 1, 'Szia! Lefoglaltam egy időpontot.\nIdőpont: 2026-02-26 15:15\nSzolgáltatás: Dietetika\nSzolgáltató: Egészségesség', '2026-02-26 07:34:48', 0, 0, 1, 'user', 5, NULL, 8, 'booking_auto'),
+(10, 1, 'Szia!\nLefoglaltam egy időpontot.\nIdőpont: 2026-03-05 12:00\nSzolgáltatás: Kontroll\nSzolgáltató: Egészségesség', '2026-02-26 07:34:48', 0, 1, 1, 'user', 5, NULL, 20, 'booking_auto'),
+(11, 15, 'Szia!\nLefoglaltam egy időpontot.\nIdőpont: 2026-06-20 08:00\nSzolgáltatás: Tanácsadás\nSzolgáltató: NemLopomAFát', '2026-03-10 07:38:39', 0, 0, 0, 'user', 5, NULL, 21, 'booking_auto'),
+(12, 15, 'szeretném kitanulni a becsületes fa eltulajdonítást!', '2026-03-10 07:39:17', 0, 1, 0, 'user', 5, NULL, NULL, 'text'),
+(13, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Tanácsadás\nIdőpont: 2026-08-01 05:00', '2026-03-10 07:39:41', 0, 1, 0, 'system', NULL, NULL, 22, 'booking_auto'),
+(14, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Tanácsadás\nIdőpont: 2026-08-01 15:00', '2026-03-10 07:40:05', 0, 1, 0, 'system', NULL, NULL, 23, 'booking_auto'),
+(15, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Kontroll\nIdőpont: 2026-03-13 11:30', '2026-03-11 07:30:23', 0, 1, 0, 'system', NULL, NULL, 24, 'booking_auto'),
+(16, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Kontroll\nIdőpont: 2026-03-13 11:30', '2026-03-11 07:34:20', 0, 1, 0, 'system', NULL, NULL, 25, 'booking_auto'),
+(17, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Gyógytorna\nIdőpont: 2026-04-04 11:30', '2026-03-11 07:37:37', 0, 1, 0, 'system', NULL, NULL, 26, 'booking_auto'),
+(18, 1, 'Szia! Lefoglaltam egy időpontot.\nSzolgáltatás: Gyógytorna\nIdőpont: 2026-03-20 14:45', '2026-03-11 07:46:27', 0, 1, 1, 'user', NULL, NULL, 29, 'booking_auto'),
+(19, 1, 'oki', '2026-03-11 07:47:00', 0, 1, 1, 'provider', 2, NULL, NULL, 'text'),
+(20, 1, 'Szia!\nLefoglaltam egy időpontot.\nIdőpont: 2026-03-20 14:45\nSzolgáltatás: Gyógytorna\nSzolgáltató: Egészségesség', '2026-03-11 08:42:01', 0, 1, 0, 'user', 5, NULL, 31, 'booking_auto');
 
 -- --------------------------------------------------------
 
@@ -179,9 +179,9 @@ CREATE TABLE `providers` (
 --
 
 INSERT INTO `providers` (`id`, `business_name`, `phone`, `telepules_id`, `industry_id`, `service_id`, `sub_service_id`, `avatar`, `bio`, `created_at`, `utca`, `hazszam`, `user_id`) VALUES
-(1, 'KBbeauty', NULL, 1, NULL, 5, NULL, NULL, NULL, '2026-02-20 11:34:30', 'Gácsi út', '30', 6),
-(2, 'Egészségesség', '063012345', 1, NULL, 3, NULL, '/Smartbookers/public/img/providers/p_2_1773217678.jpg', '', '2026-02-23 07:39:38', 'Béke út', '5', 7),
-(3, 'NemLopomAFát', '+3669696969', 3, NULL, 3, NULL, '/Smartbookers/public/img/providers/p_3_1773131853.jpg', '', '2026-03-10 08:34:49', 'Erdő út', '56.', 8);
+(1, 'KBbeauty', NULL, 1, NULL, 5, NULL, NULL, NULL, '2026-02-20 10:34:30', 'Gácsi út', '30', 6),
+(2, 'Egészségesség', '063012345', 1, NULL, 3, NULL, '/Smartbookers/public/img/providers/p_2_1773217678.jpg', '', '2026-02-23 06:39:38', 'Béke út', '5', 7),
+(3, 'NemLopomAFát', '+3669696969', 3, NULL, 3, NULL, '/Smartbookers/public/img/providers/p_3_1773131853.jpg', '', '2026-03-10 07:34:49', 'Erdő út', '56.', 8);
 
 -- --------------------------------------------------------
 
@@ -206,24 +206,24 @@ CREATE TABLE `provider_availability` (
 --
 
 INSERT INTO `provider_availability` (`id`, `provider_id`, `slot_date`, `start_time`, `end_time`, `slot_minutes`, `sub_service_id`, `is_active`, `created_at`) VALUES
-(1, 1, '2026-02-28', '09:00:00', '09:30:00', 30, 18, 1, '2026-02-20 13:06:12'),
-(2, 2, '2026-02-27', '13:45:00', '15:30:00', 90, 10, 1, '2026-02-23 07:40:12'),
-(3, 2, '2026-08-01', '05:00:00', '07:15:00', 120, 10, 1, '2026-02-24 11:20:32'),
-(4, 2, '2026-08-01', '15:00:00', '17:00:00', 120, 10, 1, '2026-02-24 11:20:32'),
-(5, 2, '2026-03-06', '12:15:00', '13:00:00', 30, 11, 1, '2026-02-25 07:14:18'),
-(6, 2, '2026-02-26', '13:15:00', '14:30:00', 60, 11, 1, '2026-02-26 08:13:54'),
-(7, 2, '2026-02-26', '15:15:00', '16:30:00', 60, 35, 1, '2026-02-26 08:22:20'),
-(8, 2, '2026-03-01', '11:30:00', '13:45:00', 120, 36, 1, '2026-02-26 08:29:26'),
-(9, 2, '2026-03-03', '14:00:00', '15:00:00', 45, 10, 1, '2026-02-26 09:02:11'),
-(10, 2, '2026-03-03', '08:45:00', '09:45:00', 45, 35, 1, '2026-03-03 07:39:38'),
-(11, 2, '2026-03-03', '12:00:00', '13:15:00', 60, 35, 1, '2026-03-03 07:58:06'),
-(12, 2, '2026-03-05', '12:00:00', '13:15:00', 60, 11, 1, '2026-03-03 08:01:43'),
-(13, 3, '2026-06-20', '08:00:00', '10:15:00', 120, 10, 1, '2026-03-10 08:35:54'),
-(14, 2, '2026-03-13', '11:30:00', '12:45:00', 60, 11, 1, '2026-03-11 08:30:06'),
-(15, 2, '2026-04-04', '11:30:00', '12:15:00', 30, 36, 1, '2026-03-11 08:37:27'),
-(16, 2, '2026-03-20', '14:45:00', '16:30:00', 90, 36, 1, '2026-03-11 08:45:39'),
-(17, 2, '2026-06-04', '13:45:00', '14:45:00', 45, 36, 1, '2026-03-11 09:46:32'),
-(18, 2, '2026-03-12', '12:00:00', '13:00:00', 45, 35, 1, '2026-03-11 09:47:00');
+(1, 1, '2026-02-28', '09:00:00', '09:30:00', 30, 18, 1, '2026-02-20 12:06:12'),
+(2, 2, '2026-02-27', '13:45:00', '15:30:00', 90, 10, 1, '2026-02-23 06:40:12'),
+(3, 2, '2026-08-01', '05:00:00', '07:15:00', 120, 10, 1, '2026-02-24 10:20:32'),
+(4, 2, '2026-08-01', '15:00:00', '17:00:00', 120, 10, 1, '2026-02-24 10:20:32'),
+(5, 2, '2026-03-06', '12:15:00', '13:00:00', 30, 11, 1, '2026-02-25 06:14:18'),
+(6, 2, '2026-02-26', '13:15:00', '14:30:00', 60, 11, 1, '2026-02-26 07:13:54'),
+(7, 2, '2026-02-26', '15:15:00', '16:30:00', 60, 35, 1, '2026-02-26 07:22:20'),
+(8, 2, '2026-03-01', '11:30:00', '13:45:00', 120, 36, 1, '2026-02-26 07:29:26'),
+(9, 2, '2026-03-03', '14:00:00', '15:00:00', 45, 10, 1, '2026-02-26 08:02:11'),
+(10, 2, '2026-03-03', '08:45:00', '09:45:00', 45, 35, 1, '2026-03-03 06:39:38'),
+(11, 2, '2026-03-03', '12:00:00', '13:15:00', 60, 35, 1, '2026-03-03 06:58:06'),
+(12, 2, '2026-03-05', '12:00:00', '13:15:00', 60, 11, 1, '2026-03-03 07:01:43'),
+(13, 3, '2026-06-20', '08:00:00', '10:15:00', 120, 10, 1, '2026-03-10 07:35:54'),
+(14, 2, '2026-03-13', '11:30:00', '12:45:00', 60, 11, 1, '2026-03-11 07:30:06'),
+(15, 2, '2026-04-04', '11:30:00', '12:15:00', 30, 36, 1, '2026-03-11 07:37:27'),
+(16, 2, '2026-03-20', '14:45:00', '16:30:00', 90, 36, 1, '2026-03-11 07:45:39'),
+(17, 2, '2026-06-04', '13:45:00', '14:45:00', 45, 36, 1, '2026-03-11 08:46:32'),
+(18, 2, '2026-03-12', '12:00:00', '13:00:00', 45, 35, 1, '2026-03-11 08:47:00');
 
 -- --------------------------------------------------------
 
@@ -347,14 +347,15 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role_id`, `created_at`, `avatar`) VALUES
-(1, 'Anna', 'anna@gmail.com', '$2y$10$J45IDrkjr4/YEBUctuZsVugYh/u5tZ9n8Bwb3uNUrIoTSu.MmDqUO', 1, '2026-02-19 17:40:53', NULL),
-(2, 'cica', 'hshd@gmail.com', '$2y$10$LtsdPVILf6ASHjNG1IFqauioRuFizlthKx9CWHyz.FndAY04hECFC', 1, '2026-02-19 17:42:18', NULL),
-(3, 'qwaertzujk', 'biti@gmail.com', '$2y$10$mSnD7u1mZeVT.QO87SP6s.6p.cPYacZlnq3YaLJr93eaEp7dlaO9G', 1, '2026-02-19 17:43:49', NULL),
-(4, 'biti', 'didi@gmail.com', '$2y$10$TMQNNp4jv5UAq8RU0okkguoNcNvw38W4drEdbZuEdsep2U5tffHmq', 1, '2026-02-19 17:47:18', NULL),
-(5, 'Gazsó Norbert', 'gazsonorbi@gmail.com', '$2y$10$Pti7MHS7lqGaR8CVvp9NH.fe6gZ3.MknwZZBUuxLGhyug00h3Lvqm', 1, '2026-02-20 06:26:35', '/Smartbookers/public/images/avatars/a3.png'),
-(6, 'Koplányi Bítia Anna', 'bituss@icloud.com', '$2y$10$f2UZyH5/.9EGjo7fKQEjKe823NhRyRDzVUL/gEdEHOVI3DwNtbKjC', 2, '2026-02-20 11:34:30', NULL),
-(7, 'Hipszer', 'gazsonorbi4@gmail.com', '$2y$10$Q4dTO4LivWIrqwPcNgRf8.KJ.9O0N4zCK9zwfQZuKIB7LkQWEHRx6', 2, '2026-02-23 07:39:38', NULL),
-(8, 'Kiss Elemér', 'kisselemer@gmail.com', '$2y$10$amjV2v4yreVQLcgmPYigzO/Nyr7zGuxc0UYm0wGdzy9zNinJtT5ry', 2, '2026-03-10 08:34:49', NULL);
+(1, 'Anna', 'anna@gmail.com', '$2y$10$J45IDrkjr4/YEBUctuZsVugYh/u5tZ9n8Bwb3uNUrIoTSu.MmDqUO', 1, '2026-02-19 16:40:53', NULL),
+(2, 'cica', 'hshd@gmail.com', '$2y$10$LtsdPVILf6ASHjNG1IFqauioRuFizlthKx9CWHyz.FndAY04hECFC', 1, '2026-02-19 16:42:18', NULL),
+(3, 'qwaertzujk', 'biti@gmail.com', '$2y$10$mSnD7u1mZeVT.QO87SP6s.6p.cPYacZlnq3YaLJr93eaEp7dlaO9G', 1, '2026-02-19 16:43:49', NULL),
+(4, 'biti', 'didi@gmail.com', '$2y$10$TMQNNp4jv5UAq8RU0okkguoNcNvw38W4drEdbZuEdsep2U5tffHmq', 1, '2026-02-19 16:47:18', NULL),
+(5, 'Gazsó Norbert', 'gazsonorbi@gmail.com', '$2y$10$Pti7MHS7lqGaR8CVvp9NH.fe6gZ3.MknwZZBUuxLGhyug00h3Lvqm', 1, '2026-02-20 05:26:35', '/Smartbookers/public/images/avatars/a3.png'),
+(6, 'Koplányi Bítia Anna', 'bituss@icloud.com', '$2y$10$f2UZyH5/.9EGjo7fKQEjKe823NhRyRDzVUL/gEdEHOVI3DwNtbKjC', 2, '2026-02-20 10:34:30', NULL),
+(7, 'Hipszer', 'gazsonorbi4@gmail.com', '$2y$10$Q4dTO4LivWIrqwPcNgRf8.KJ.9O0N4zCK9zwfQZuKIB7LkQWEHRx6', 2, '2026-02-23 06:39:38', NULL),
+(8, 'Kiss Elemér', 'kisselemer@gmail.com', '$2y$10$amjV2v4yreVQLcgmPYigzO/Nyr7zGuxc0UYm0wGdzy9zNinJtT5ry', 2, '2026-03-10 07:34:49', NULL),
+(9, 'Admin', 'admin1@admin.hu', '$2y$10$X8CowXYUA.tqI5OHxuVTj.IvcPNlxBjz/EOPoNVHuJqJDfV/oI8Wq', 3, '2026-03-13 13:15:52', NULL);
 
 --
 -- Indexek a kiírt táblákhoz
@@ -496,7 +497,7 @@ ALTER TABLE `provider_availability`
 -- AUTO_INCREMENT a táblához `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT a táblához `services`
@@ -520,7 +521,7 @@ ALTER TABLE `telepulesek`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Megkötések a kiírt táblákhoz
