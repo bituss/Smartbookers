@@ -8,10 +8,6 @@ if(!$provider_id){
     die("Nincs provider.");
 }
 
-/* a foglalási oldal linkje */
 $url = "http://localhost/Smartbookers/book.php?provider=".$provider_id;
 
-/* QR generálás */
 QRcode::png($url);
-
-?>

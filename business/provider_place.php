@@ -796,9 +796,13 @@ width="200"
 >
 
 <p>Vendégek ezzel tudnak gyorsan időpontot foglalni.</p>
-<h3><a href="/Smartbookers/qr_provider.php?provider=<?= $provider_id ?>" download>
-QR kód letöltése ↓
-</a></h3>
+<a 
+href="/Smartbookers/qr_pdf.php?provider=<?= $provider_id ?>" 
+target="_blank"
+class="btn"
+>
+QR kód plakát letöltése
+</a>
 </div>
 <div id="dayPopup" class="popup">
 
