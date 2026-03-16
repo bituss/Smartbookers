@@ -786,7 +786,19 @@ Lemondások megjelölése olvasottnak
 <p>Kattints egy napra a részletek megtekintéséhez.</p>
 
 </div>
+
 </div>
+<h3>Saját foglalási QR kód</h3>
+
+<img 
+src="/Smartbookers/qr_provider.php?provider=<?= $provider_id ?>" 
+width="200"
+>
+
+<p>Vendégek ezzel tudnak gyorsan időpontot foglalni.</p>
+<h3><a href="/Smartbookers/qr_provider.php?provider=<?= $provider_id ?>" download>
+QR kód letöltése ↓
+</a></h3>
 </div>
 <div id="dayPopup" class="popup">
 
