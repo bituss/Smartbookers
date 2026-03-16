@@ -287,6 +287,33 @@ while ($b = $resB->fetch_assoc()) {
 $BREAK_MIN = 15;
 $slots = [];
 
+/* =========================
+   Naptár adatok
+========================= */
+
+$calendarDays = [];
+
+$stmt = $mysqli->prepare("
+SELECT 
+DATE(pa.slot_date) as d,
+COUNT(DISTINCT pa.id) as slots,
+SUM(CASE WHEN b.id IS NOT NULL AND b.cancelled_at IS NULL THEN 1 ELSE 0 END) as booked
+FROM provider_availability pa
+LEFT JOIN bookings b
+ON DATE(b.booking_time)=pa.slot_date
+AND b.provider_id=pa.provider_id
+WHERE pa.provider_id=?
+GROUP BY d
+");
+
+$stmt->bind_param("i",$provider_id);
+$stmt->execute();
+$res=$stmt->get_result();
+
+while($row=$res->fetch_assoc()){
+$calendarDays[$row['d']]=$row;
+}
+
 foreach ($dayRanges as $r) {
   if ((int)$r['is_active'] !== 1) continue;
 
@@ -390,6 +417,131 @@ border-bottom:1px solid #eee;
 
 .cancelItem:last-child{
 border-bottom:none;
+}
+.calendarNav{
+display:flex;
+justify-content:center;
+gap:20px;
+margin:15px 0;
+font-weight:700;
+}
+
+.calendarNav button{
+padding:6px 12px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+#calendar{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:6px;
+}
+
+.calDay{
+padding:14px;
+border-radius:10px;
+text-align:center;
+font-weight:700;
+cursor:pointer;
+}
+
+.calFree{
+background:#60a5fa;
+color:white;
+}
+
+.calBooked{
+background:#22c55e;
+color:white;
+}
+
+.calNone{
+background:#e5e7eb;
+}
+
+/* popup */
+
+.popup{
+
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.5);
+align-items:center;
+justify-content:center;
+z-index:9999;
+
+}
+
+.popupContent{
+background:white;
+padding:25px;
+border-radius:12px;
+width:300px;
+text-align:center;
+}
+.calendarWeek{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+text-align:center;
+font-weight:700;
+margin-bottom:5px;
+}
+#calendar{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:6px;
+}
+
+.calDay{
+padding:14px;
+text-align:center;
+border-radius:10px;
+cursor:pointer;
+font-weight:700;
+}
+
+.calFree{
+background:#4da3ff;
+color:white;
+}
+
+.calBooked{
+background:#4CAF50;
+color:white;
+}
+
+.calNone{
+background:#eee;
+color:#999;
+}
+
+@media(max-width:768px){
+
+#calendar{
+grid-template-columns:repeat(7,1fr);
+gap:4px;
+}
+
+.calDay{
+padding:10px;
+font-size:14px;
+}
+
+}
+
+@media(max-width:480px){
+
+.calDay{
+padding:8px;
+font-size:12px;
+}
+
 }
   </style>
 </head>
@@ -555,10 +707,53 @@ Lemondások megjelölése olvasottnak
       </table>
     <?php endif; ?>
   </div>
+  <div class="card">
+
+<h2 class="center">📅 Foglalási naptár</h2>
+
+<div class="calendarNav">
+<button onclick="prevMonth()">◀</button>
+<span id="monthTitle"></span>
+<button onclick="nextMonth()">▶</button>
+</div>
+<div class="calendarWeek">
+<div>H</div>
+<div>K</div>
+<div>Sze</div>
+<div>Cs</div>
+<div>P</div>
+<div>Szo</div>
+<div>V</div>
+</div>
+<div id="calendar"></div>
+<div class="card">
+
+<h3>📖 Naptár használata</h3>
+
+<p>🟦 Kék nap → van szabad időpont</p>
+<p>🟩 Zöld nap → van foglalás</p>
+<p>⬜ Szürke → nincs megadva időpont</p>
+
+<p>Kattints egy napra a részletek megtekintéséhez.</p>
+
+</div>
+</div>
+</div>
+<div id="dayPopup" class="popup">
+
+<div class="popupContent">
+
+<h3 id="popupDate"></h3>
+
+<div id="popupInfo"></div>
+
+<button onclick="closePopup()">Bezár</button>
 
 </div>
 
+</div>
 <script>
+  const calendarData = <?= json_encode($calendarDays) ?>;
 let rangeIndex = 1;
 const BREAK_MIN = 15;
 
@@ -691,7 +886,119 @@ box.style.display = "block";
 }
 
 }
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+
+function renderCalendar(){
+
+const cal=document.getElementById("calendar");
+cal.innerHTML="";
+
+let first=new Date(currentYear,currentMonth,1);
+let last=new Date(currentYear,currentMonth+1,0);
+
+let startDay = first.getDay();
+if(startDay === 0) startDay = 7;
+
+document.getElementById("monthTitle").innerText =
+first.toLocaleString('hu',{month:'long',year:'numeric'});
+
+for(let i=1;i<startDay;i++){
+let empty=document.createElement("div");
+cal.appendChild(empty);
+}
+
+for(let d=1; d<=last.getDate(); d++){
+
+let dateStr =
+currentYear+"-"+String(currentMonth+1).padStart(2,'0')+"-"+String(d).padStart(2,'0');
+
+let div=document.createElement("div");
+div.className="calDay";
+
+if(calendarData[dateStr]){
+
+let data=calendarData[dateStr];
+
+if(data.booked>0){
+div.classList.add("calBooked");
+}else{
+div.classList.add("calFree");
+}
+
+}else{
+
+div.classList.add("calNone");
+
+}
+
+div.innerText=d;
+
+div.onclick=()=>openPopup(dateStr);
+
+cal.appendChild(div);
+
+}
+
+}
+
+function prevMonth(){
+
+currentMonth--;
+
+if(currentMonth<0){
+currentMonth=11;
+currentYear--;
+}
+
+renderCalendar();
+
+}
+
+function nextMonth(){
+
+currentMonth++;
+
+if(currentMonth>11){
+currentMonth=0;
+currentYear++;
+}
+
+renderCalendar();
+
+}
+
+function openPopup(date){
+
+document.getElementById("dayPopup").style.display="flex";
+
+document.getElementById("popupDate").innerText=date;
+
+if(calendarData[date]){
+
+let data=calendarData[date];
+
+document.getElementById("popupInfo").innerHTML=
+"Idősávok: "+data.slots+"<br>Foglalások: "+data.booked;
+
+}else{
+
+document.getElementById("popupInfo").innerHTML=
+"Nincs felvett idősáv";
+
+}
+
+}
+
+function closePopup(){
+
+document.getElementById("dayPopup").style.display="none";
+
+}
+
+renderCalendar();
 </script>
+
 
 <?php include '../includes/footer.php'; ?>
 </body>
