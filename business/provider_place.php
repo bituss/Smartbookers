@@ -199,19 +199,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_ranges'])) {
 }
 
 /* =========================
-   Lemondás értesítés számláló
+   Lemondott foglalások
 ========================= */
-$cancelCount = 0;
+
+$cancelBookings = [];
+
 $stmt = $mysqli->prepare("
-  SELECT COUNT(*) c
-  FROM bookings b
-  WHERE b.provider_id = ?
-    AND b.cancelled_at IS NOT NULL
-    AND b.provider_seen = 0
+SELECT
+  b.id,
+  b.booking_time,
+  u.name AS user_name,
+  u.email AS user_email,
+  ss.name AS service_name
+FROM bookings b
+LEFT JOIN users u ON u.id = b.user_id
+LEFT JOIN sub_services ss ON ss.id = b.sub_service_id
+WHERE b.provider_id = ?
+AND b.cancelled_at IS NOT NULL
+AND b.provider_seen = 0
+ORDER BY b.cancelled_at DESC
 ");
+
 $stmt->bind_param("i", $provider_id);
 $stmt->execute();
-$cancelCount = (int)($stmt->get_result()->fetch_assoc()['c'] ?? 0);
+$res = $stmt->get_result();
+
+while ($row = $res->fetch_assoc()) {
+  $cancelBookings[] = $row;
+}
+
+$cancelCount = count($cancelBookings);
 
 /* =========================
    Kereső (nap alapján)
@@ -346,6 +363,34 @@ include '../includes/header.php';
     .b-booked{background:#f08080}
     .b-cancel{background:#4e1609}
     .dot{width:8px;height:8px;border-radius:999px;background:rgba(0,0,0,.35)}
+    .cancelBox{
+margin-top:15px;
+border:1px solid rgba(0,0,0,.1);
+border-radius:12px;
+background:#fff;
+overflow:hidden;
+}
+
+.cancelHeader{
+padding:12px;
+font-weight:800;
+cursor:pointer;
+background:#ffe4e4;
+}
+
+.cancelList{
+display:none;
+padding:10px;
+}
+
+.cancelItem{
+padding:10px;
+border-bottom:1px solid #eee;
+}
+
+.cancelItem:last-child{
+border-bottom:none;
+}
   </style>
 </head>
 <body>
@@ -357,12 +402,42 @@ include '../includes/header.php';
   <?php if($success): ?><div class="msg success"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
   <?php if($error): ?><div class="msg error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
 
-  <?php if($cancelCount > 0): ?>
-    <div class="notice">⚠️ Új lemondás érkezett: <?= (int)$cancelCount ?> db</div>
-    <p class="center">
-      <a class="btn" href="/Smartbookers/business/seen_cancellations.php">Lemondások megjelölése olvasottnak</a>
-    </p>
-  <?php endif; ?>
+    <?php if($cancelCount > 0): ?>
+
+<div class="cancelBox">
+
+<div class="cancelHeader" onclick="toggleCancels()">
+⚠️ Új lemondás érkezett: <?= (int)$cancelCount ?> db (kattints a megnyitáshoz)
+</div>
+
+<div class="cancelList" id="cancelList">
+
+<?php foreach($cancelBookings as $c): ?>
+
+<div class="cancelItem">
+
+<strong><?= htmlspecialchars($c['user_name']) ?></strong><br>
+
+<?= htmlspecialchars($c['service_name']) ?><br>
+
+<?= date("Y-m-d H:i", strtotime($c['booking_time'])) ?><br>
+
+<?= htmlspecialchars($c['user_email']) ?>
+
+</div>
+
+<?php endforeach; ?>
+
+<p class="center" style="margin-top:10px;">
+<a class="btn" href="/Smartbookers/business/seen_cancellations.php">
+Lemondások megjelölése olvasottnak
+</a>
+</p>
+
+</div>
+</div>
+
+<?php endif; ?>
 
   <div class="card">
     <h2 class="center" style="margin:0 0 10px;">Idősávok felvétele</h2>
@@ -605,7 +680,17 @@ document.addEventListener('change', (e) => {
 
 // Első sor: tegyük readonly-ra + automatikus működés
 document.querySelectorAll('.tEnd').forEach(el => el.setAttribute('readonly','readonly'));
+function toggleCancels(){
 
+let box = document.getElementById("cancelList");
+
+if(box.style.display === "block"){
+box.style.display = "none";
+}else{
+box.style.display = "block";
+}
+
+}
 </script>
 
 <?php include '../includes/footer.php'; ?>
