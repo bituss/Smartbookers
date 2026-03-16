@@ -34,13 +34,13 @@
 
     <!-- Legal -->
     <div class="footer-links">
-      <h4>Jogi</h4>
-      <ul>
-        <li><a href="#">Adatvédelem</a></li>
-        <li><a href="#">ÁSZF</a></li>
-        <li><a href="#">Cookie beállítások</a></li>
-      </ul>
-    </div>
+  <h4>Jogi</h4>
+  <ul>
+    <li><a href="/Smartbookers/legal/adatvedelem.pdf" target="_blank">Adatvédelem</a></li>
+    <li><a href="/Smartbookers/legal/aszf.pdf" target="_blank">ÁSZF</a></li>
+    <li><a href="/Smartbookers/legal/cookie.pdf" target="_blank">Cookie beállítások</a></li>
+  </ul>
+</div>
 
   </div>
 
