@@ -181,6 +181,7 @@ img{ display:block; max-width:100%; }
 
     position:relative;
     overflow:hidden;
+    
   }
 
   .nav-desktop .btn.small:hover,
@@ -1752,10 +1753,55 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
     position: relative;
   }
 }
+/* MOBIL NAV GOMBOK */
+.nav-mobile{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+/* MINDEN gomb ugyanúgy nézzen ki */
+.nav-mobile .btn,
+.nav-mobile a.btn{
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 14px;
+  border-radius: 14px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  background: #2f2c74; /* vagy ami nálad van */
+  color: white;
+}
+
+/* hover */
+.nav-mobile .btn:hover{
+  opacity: 0.9;
+}
+
+/* danger (kilépés) */
+.nav-mobile .danger{
+  background: #c0392b;
+}
   /* ======================================================
    MOBILE: alszolgáltatások elkülönítése (szín + behúzás)
 ====================================================== */
 @media (max-width:938px){
+  #chatBtnMobile{
+    max-width: 320px !important;
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    padding: 12px 16px;
+  }
 
   /* iparág blokkok között kis elválasztó */
   .mobile-sub{
