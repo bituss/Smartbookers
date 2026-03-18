@@ -5,23 +5,6 @@ $pdo = new PDO('mysql:host=localhost;dbname=idopont_foglalas;charset=utf8mb4','r
 
 $msg = '';
 
-// --- Új szolgáltatás hozzáadása ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
-  $name = trim($_POST['service_name'] ?? '');
-  if ($name === '') {
-    $msg = 'error:A név megadása kötelező.';
-  } else {
-    $exists = $pdo->prepare("SELECT COUNT(*) FROM services WHERE name = ?");
-    $exists->execute([$name]);
-    if ($exists->fetchColumn() > 0) {
-      $msg = 'error:Ez a szolgáltatás már létezik.';
-    } else {
-      $pdo->prepare("INSERT INTO services (name) VALUES (?)")->execute([$name]);
-      $msg = 'success:Szolgáltatás hozzáadva.';
-    }
-  }
-}
-
 // --- Szolgáltatás törlése ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_service_id'])) {
   $id = (int)$_POST['delete_service_id'];
@@ -68,60 +51,8 @@ $subServices = $pdo->query("
   <div class="admin-alert <?= $type ?>"><?= htmlspecialchars($text) ?></div>
 <?php endif; ?>
 
-<!-- Új szolgáltatás -->
-<div class="admin-section-head">
-  <h2 style="font-size:18px;font-weight:800;margin:0;">Fő szolgáltatások</h2>
-</div>
 
-<form class="admin-form" method="post">
-  <input class="admin-input" type="text" name="service_name" placeholder="Új szolgáltatás neve..." required>
-  <button class="btn-admin primary" type="submit" name="add_service" value="1">Hozzáadás</button>
-</form>
 
-<div class="admin-table-wrap">
-  <table class="admin-table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Név</th>
-        <th>Alszolg. száma</th>
-        <th>Művelet</th>
-      </tr>
-    </thead>
-    <tbody>
-    <?php foreach ($services as $s): ?>
-      <?php $subCount = count(array_filter($subServices, fn($ss) => $ss['service_id'] == $s['id'])); ?>
-      <tr>
-        <td><?= $s['id'] ?></td>
-        <td><?= htmlspecialchars($s['name']) ?></td>
-        <td><?= $subCount ?></td>
-        <td>
-          <form method="post" style="display:inline;" onsubmit="return confirm('Törlöd a szolgáltatást és összes alszolgáltatását?');">
-            <input type="hidden" name="delete_service_id" value="<?= $s['id'] ?>">
-            <button class="btn-admin danger" type="submit">Törlés</button>
-          </form>
-        </td>
-      </tr>
-    <?php endforeach; ?>
-    </tbody>
-  </table>
-</div>
-
-<!-- Alszolgáltatások -->
-<div class="admin-section-head" style="margin-top:28px;">
-  <h2 style="font-size:18px;font-weight:800;margin:0;">Alszolgáltatások</h2>
-</div>
-
-<form class="admin-form" method="post">
-  <select class="admin-select" name="sub_service_id" required>
-    <option value="">Válassz szolgáltatást...</option>
-    <?php foreach ($services as $s): ?>
-      <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
-    <?php endforeach; ?>
-  </select>
-  <input class="admin-input" type="text" name="sub_name" placeholder="Új alszolgáltatás neve..." required>
-  <button class="btn-admin primary" type="submit" name="add_sub" value="1">Hozzáadás</button>
-</form>
 
 <div class="admin-table-wrap">
   <table class="admin-table">

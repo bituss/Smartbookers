@@ -74,29 +74,7 @@ if ($editId > 0) {
   <div class="admin-alert <?= $type ?>"><?= htmlspecialchars($text) ?></div>
 <?php endif; ?>
 
-<!-- Szerkesztés / Hozzáadás -->
-<?php if ($editRow): ?>
-  <h2 style="font-size:18px;font-weight:800;margin:0 0 12px;">Szerkesztés: <?= htmlspecialchars($editRow['name']) ?></h2>
-  <form class="admin-form" method="post" style="flex-direction:column;align-items:flex-start;gap:10px;">
-    <input type="hidden" name="edit_id" value="<?= $editRow['id'] ?>">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <input class="admin-input" type="text" name="edit_name" placeholder="Név" value="<?= htmlspecialchars($editRow['name']) ?>" required>
-      <input class="admin-input" type="text" name="edit_slug" placeholder="Slug (pl. kozmetika)" value="<?= htmlspecialchars($editRow['slug']) ?>" required>
-    </div>
-    <input class="admin-input" type="text" name="edit_desc" placeholder="Leírás (opcionális)" value="<?= htmlspecialchars($editRow['description'] ?? '') ?>" style="width:100%;max-width:500px;">
-    <div style="display:flex;gap:10px;">
-      <button class="btn-admin primary" type="submit" name="edit_industry" value="1">Mentés</button>
-      <a href="/Smartbookers/admin/industries.php" class="btn-admin ghost">Mégse</a>
-    </div>
-  </form>
-<?php else: ?>
-  <form class="admin-form" method="post">
-    <input class="admin-input" type="text" name="ind_name" placeholder="Új iparág neve..." required>
-    <input class="admin-input" type="text" name="ind_slug" placeholder="Slug (pl. kozmetika)" required>
-    <input class="admin-input" type="text" name="ind_desc" placeholder="Leírás (opcionális)">
-    <button class="btn-admin primary" type="submit" name="add_industry" value="1">Hozzáadás</button>
-  </form>
-<?php endif; ?>
+
 
 <div class="admin-table-wrap">
   <table class="admin-table">

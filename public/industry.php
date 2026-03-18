@@ -41,7 +41,7 @@ include '../includes/header.php';
 
 if (!$industry) {
   http_response_code(404);
-  echo "<div style='padding:40px; text-align:center;'>Nincs ilyen iparág.</div>";
+  echo "<div style='padding:40px; text-align:center;'>Karbantartás alatt...</div>";
   include '../includes/footer.php';
   exit;
 }
