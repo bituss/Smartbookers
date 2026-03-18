@@ -576,3 +576,12 @@ ALTER TABLE `sub_services`
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
 COMMIT;
+
+
+
+
+
+
+
+
+;extension=gd

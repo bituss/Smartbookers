@@ -60,7 +60,9 @@ $st1 = $mysqli->prepare("
   LEFT JOIN services s ON s.id = p.service_id
   LEFT JOIN sub_services ss ON ss.id = b.sub_service_id
   WHERE b.user_id = ?
-  ORDER BY b.booking_time ASC
+AND b.cancelled_at IS NULL
+AND b.booking_time >= NOW()
+ORDER BY b.booking_time ASC
 ");
 $st1->bind_param("i", $user_id);
 $st1->execute();
@@ -118,7 +120,7 @@ while ($row = $rs2->fetch_assoc()) $freeSlots[] = $row;
       <?php foreach($myBookings as $b): ?>
         <?php
           $isCancelled = !empty($b['cancelled_at']);
-          $cardClass = $isCancelled ? 'cancelled' : 'booked';
+          $cardClass = 'booked';
           $dt = date("Y-m-d H:i", strtotime($b['booking_time']));
         ?>
         <div class="appointment-card <?= $cardClass ?>">
@@ -156,37 +158,9 @@ while ($row = $rs2->fetch_assoc()) $freeSlots[] = $row;
 
   <!-- JOBB OSZLOP: Szabad időpontok -->
   <div class="appointments-column">
-    <h3>Szabad időpontok</h3>
+    <h3>Válassz szolgáltatást</h3>
 
-    <?php if(count($freeSlots) > 0): ?>
-      <p style="color:#fff; text-align:center;">Válogass az időpontok között!</p>
 
-      <?php foreach($freeSlots as $s): ?>
-        <?php
-          $dt = date("Y-m-d H:i", strtotime($s['slot_date'] . ' ' . $s['start_time']));
-        ?>
-        <div class="appointment-card free">
-          <strong>
-            <?= htmlspecialchars($s['service_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-            <?php if(!empty($s['sub_service_name'])): ?>
-              • <?= htmlspecialchars($s['sub_service_name'], ENT_QUOTES, 'UTF-8') ?>
-            <?php endif; ?>
-          </strong><br>
-          <?= htmlspecialchars($dt, ENT_QUOTES, 'UTF-8') ?>
-
-          <div class="meta">
-            <strong>Szolgáltató:</strong>
-            <?= htmlspecialchars($s['business_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-          </div>
-
-          <a href="/Smartbookers/user/book.php?availability_id=<?= (int)$s['availability_id'] ?>"
-             class="btn btn-primary btn-block">Foglalás</a>
-        </div>
-      <?php endforeach; ?>
-
-    <?php else: ?>
-      <p style="color:#fff; text-align:center;">Jelenleg nincs szabad időpont.</p>
-    <?php endif; ?>
 
     <div style="margin-top:20px; text-align:center;">
       <a href="/Smartbookers/public/industry.php?slug=kozmetika" class="btn btn-primary btn-block">Kozmetika</a>

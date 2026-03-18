@@ -38,6 +38,7 @@ if ($logged_in) {
   }
 }
 
+
 // ✅ Iparágak menü csak akkor, ha NEM provider
 $showIndustries = (!$logged_in) || ($role !== 'provider');
 ?>

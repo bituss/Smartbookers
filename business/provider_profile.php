@@ -289,17 +289,17 @@ include '../includes/header.php';
         <div class="addr">
 
   <div style="margin-bottom:8px;">
-    <strong>Email címed:</strong><br>
+    <strong>Email címed:</strong>
     <span><?= htmlspecialchars(trim((string)($provider['email'] ?? '')) ?: "Nincs megadva", ENT_QUOTES, 'UTF-8') ?></span>
   </div>
 
   <div style="margin-bottom:8px;">
-    <strong>Telefonszámod:</strong><br>
+    <strong>Telefonszámod:</strong>
     <span><?= htmlspecialchars(trim((string)($provider['phone'] ?? '')) ?: "Nincs megadva", ENT_QUOTES, 'UTF-8') ?></span>
   </div>
 
   <div style="margin-bottom:8px;">
-    <strong>Település:</strong><br>
+    <strong>Település:</strong>
     <span>
       <?= htmlspecialchars(
         trim(($telepIrsz ? $telepIrsz . " " : "") . ($telepNev ?: "")) ?: "Nincs megadva",
@@ -310,12 +310,12 @@ include '../includes/header.php';
   </div>
 
   <div style="margin-bottom:8px;">
-    <strong>Utca:</strong><br>
+    <strong>Utca:</strong>
     <span><?= htmlspecialchars(trim((string)($provider['utca'] ?? '')) ?: "Nincs megadva", ENT_QUOTES, 'UTF-8') ?></span>
   </div>
 
   <div>
-    <strong>Házszám:</strong><br>
+    <strong>Házszám:</strong>
     <span><?= htmlspecialchars(trim((string)($provider['hazszam'] ?? '')) ?: "Nincs megadva", ENT_QUOTES, 'UTF-8') ?></span>
   </div>
 

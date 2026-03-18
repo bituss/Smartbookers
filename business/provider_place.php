@@ -422,8 +422,11 @@ include '../includes/header.php';
     .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-weight:900;font-size:12px}
     .b-free{background:#90ee90}
     .b-booked{background:#f08080}
-    .b-cancel{background:#4e1609}
-    .dot{width:8px;height:8px;border-radius:999px;background:rgba(0,0,0,.35)}
+    .b-cancel{background:#4e1609;
+  background:#4e1609;
+  color:#fff;
+}
+    .dot{width:8px;height:8px;border-radius:999px;background:rgba(255, 255, 255, 0.35)}
     .cancelBox{
 margin-top:15px;
 border:1px solid rgba(0,0,0,.1);
@@ -592,6 +595,12 @@ font-weight:700;
 color:#4CAF50;
 font-weight:700;
 }
+
+
+.tableWrap{
+  width:100%;
+  overflow-x:auto;
+}
   </style>
 </head>
 <body>
@@ -728,6 +737,7 @@ Lemondások megjelölése olvasottnak
     <?php elseif(count($slots) === 0): ?>
       <p class="center muted">A beállított sávokból nem generálható slot.</p>
     <?php else: ?>
+      <div class="tableWrap">
       <table>
         <tr>
           <th>Idő</th>
@@ -754,6 +764,7 @@ Lemondások megjelölése olvasottnak
           </tr>
         <?php endforeach; ?>
       </table>
+        </div>
     <?php endif; ?>
   </div>
   <div class="card">

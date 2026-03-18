@@ -66,7 +66,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'register') {
   $password    = (string)($_POST["password"] ?? '');
   $password2   = (string)($_POST["password2"] ?? '');
 
-  $serviceId   = (int)($_POST["service_id"] ?? 0); // CSAK EZ KELL
+  $serviceId   = (int)($_POST["service_id"] ?? 0);
+  $phone = trim((string)($_POST["phone"] ?? '')); // CSAK EZ KELL
 
   // cím adatok
   $zip     = trim((string)($_POST["zip"] ?? ''));
@@ -135,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'register') {
 
           // 3) provider (user_id + service_id + cím)
           $industryId = null;
-          $phone = null;
+         
 
           $insP = $pdo->prepare("
             INSERT INTO providers (user_id, business_name, phone, telepules_id, industry_id, service_id, utca, hazszam)
