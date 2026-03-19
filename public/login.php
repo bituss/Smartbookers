@@ -98,7 +98,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'login') {
       $_SESSION["name"]    = (string)$userRow["name"];
       $_SESSION["role"]    = "user";
 
-      header("Location: /Smartbookers/user/profile.php");
+      if($_SESSION["book_provider"] && $_SESSION["book_provider"] != null) {
+        header("Location: /Smartbookers/user/book_provider.php?provider_id={$_SESSION["book_provider"]}");
+      } else {
+        header("Location: /Smartbookers/user/profile.php");
+      }
       exit;
     }
 

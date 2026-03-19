@@ -8,6 +8,6 @@ if(!$provider_id){
     die("Nincs provider.");
 }
 
-$url = "http://localhost/Smartbookers/book.php?provider=".$provider_id;
+$url =  "http://localhost/Smartbookers/book_provider.php?provider_id=".$provider_id;
 
 QRcode::png($url);
