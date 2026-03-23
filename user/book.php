@@ -148,7 +148,7 @@ try {
 
   $mysqli->commit();
 
-  header("Location: /Smartbookers/user/dashboard.php?success=1");
+  header("Location: /Smartbookers/user/profile.php");
   exit;
 
 } catch (Throwable $e) {

@@ -495,9 +495,8 @@ include '../includes/header.php';
   .userMeta h2{margin:0; color:#0f172a; font-size:20px;}
   .userMeta p{margin:4px 0 0; color:#475569;}
   .msg{margin-top:10px; font-weight:800;}
-  .ok{color:#16a34a;}
+  .ok{background-color: green; border-radius:6px; color:white; text-align:center; height:70px; width:300px;padding-top: 20px;}
   .err{color:#ef4444;}
-
   .avatarDropdown{ width:100%; margin-top:12px; }
   .avatarToggle{
     width:100%;padding:14px 16px;border:0;border-radius:14px;
@@ -523,9 +522,9 @@ include '../includes/header.php';
     background: linear-gradient(135deg,#24256e,#000);
     color:#fff;font-weight:900;cursor:pointer;
   }
-
+  
   .dash{display:flex;gap:18px;margin-top:22px;flex-wrap:wrap;}
-  .col{flex:1; min-width:280px;}
+  .col{flex:1; min-width:200px;}
   .h3{color:#fff; text-align:center; margin:0 0 10px; font-weight:900;}
   .card{background: rgba(255,255,255,0.92);border-radius: 14px;padding: 16px;margin-bottom: 12px;box-shadow: 0 8px 18px rgba(0,0,0,.10);border-left: 6px solid #4CAF50;}
   .card.free{border-left-color:#2196F3;}
@@ -630,82 +629,24 @@ include '../includes/header.php';
       <?php endif; ?>
     </div>
 
-    <div class="col">
-      <h3 class="h3">Időpont keresés</h3>
+    
+     <!-- JOBB OSZLOP: Szabad időpontok -->
+       <div class="appointments-column">
+        <h3 class="h3">Válassz szolgáltatást</h3>
 
-      <div class="card free">
-        <strong>Válassz szolgáltatást, alszolgáltatást és napot</strong>
-        <div class="meta">Csak ma és a következő 6 hónap közötti napokra lehet keresni/foglalni.</div>
 
-        <form method="post" style="margin-top:10px;">
-          <input type="hidden" name="action" value="search_slots">
 
-          <label style="font-weight:900; color:#0f172a;">Szolgáltatás</label>
-          <select class="input" name="search_service_id" onchange="this.form.submit()" required>
-            <option value="">Válassz...</option>
-            <?php foreach($services as $s): ?>
-              <option value="<?= (int)$s['id'] ?>" <?= ((int)$s['id'] === (int)$selectedServiceId) ? 'selected' : '' ?>>
-                <?= htmlspecialchars((string)$s['name'], ENT_QUOTES, 'UTF-8') ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-
-          <label style="font-weight:900; color:#0f172a; margin-top:10px; display:block;">Alszolgáltatás</label>
-          <select class="input" name="search_sub_service_id" required <?= $selectedServiceId <= 0 ? 'disabled' : '' ?>>
-            <option value=""><?= $selectedServiceId <= 0 ? 'Előbb válassz szolgáltatást' : 'Válassz...' ?></option>
-            <?php foreach($subServices as $ss): ?>
-              <option value="<?= (int)$ss['id'] ?>" <?= ((int)$ss['id'] === (int)$selectedSubServiceId) ? 'selected' : '' ?>>
-                <?= htmlspecialchars((string)$ss['name'], ENT_QUOTES, 'UTF-8') ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-
-          <label style="font-weight:900; color:#0f172a; margin-top:10px; display:block;">Nap</label>
-          <input class="input" type="date" name="search_day"
-                 value="<?= htmlspecialchars($searchDay, ENT_QUOTES, 'UTF-8') ?>"
-                 min="<?= htmlspecialchars($today, ENT_QUOTES, 'UTF-8') ?>"
-                 max="<?= htmlspecialchars($maxDay, ENT_QUOTES, 'UTF-8') ?>"
-                 required>
-
-          <button class="btnLink" type="submit" style="margin-top:12px;">Keresés</button>
-        </form>
-
-        <?php if($searched): ?>
-          <div style="margin-top:14px;">
-            <strong>Szabad időpontok:</strong>
-
-            <?php if(count($availableSlots) === 0): ?>
-              <div class="meta" style="margin-top:8px;">Nincs szabad időpont (vagy nincs nyitvatartás arra a napra).</div>
-            <?php else: ?>
-              <div class="slotGrid">
-                <?php foreach($availableSlots as $row): ?>
-                  <?php $slot = (string)$row['slot']; ?>
-                  <form method="post">
-                    <input type="hidden" name="action" value="create_booking">
-                    <input type="hidden" name="service_id" value="<?= (int)$selectedServiceId ?>">
-                    <input type="hidden" name="sub_service_id" value="<?= (int)$selectedSubServiceId ?>">
-                    <input type="hidden" name="provider_id" value="<?= (int)$row['provider_id'] ?>">
-                    <input type="hidden" name="day" value="<?= htmlspecialchars($searchDay, ENT_QUOTES, 'UTF-8') ?>">
-                    <input type="hidden" name="slot_datetime" value="<?= htmlspecialchars($slot, ENT_QUOTES, 'UTF-8') ?>">
-
-                    <button class="slotBtn" type="submit"
-                      onclick="return confirm('Foglalod ezt az időpontot: <?= date('Y-m-d H:i', strtotime($slot)) ?> (<?= htmlspecialchars((string)$row['business_name'], ENT_QUOTES, 'UTF-8') ?>) ?');">
-                      <?= date("H:i", strtotime($slot)) ?>
-                      <small>
-                        <?= htmlspecialchars((string)$row['business_name'], ENT_QUOTES, 'UTF-8') ?>
-                        <?php if(!empty($row['phone'])): ?>
-                          — <?= htmlspecialchars((string)$row['phone'], ENT_QUOTES, 'UTF-8') ?>
-                        <?php endif; ?>
-                      </small>
-                    </button>
-                  </form>
-                <?php endforeach; ?>
-              </div>
-            <?php endif; ?>
-          </div>
-        <?php endif; ?>
-      </div>
+     <div style="margin-top:20px; text-align:center;  display: flex;
+       flex-direction: column;
+       gap: 20px;">
+      <a href="/Smartbookers/public/industry.php?slug=kozmetika" class="btn btn-primary btn-block">Kozmetika</a>
+      <a href="/Smartbookers/public/industry.php?slug=fodraszat" class="btn btn-primary btn-block">Fodrászat</a>
+      <a href="/Smartbookers/public/industry.php?slug=mukorom" class="btn btn-primary btn-block">Műköröm</a>
+      <a href="/Smartbookers/public/industry.php?slug=masszazs" class="btn btn-primary btn-block">Masszázs</a>
+      <a href="/Smartbookers/public/industry.php?slug=egeszseg" class="btn btn-primary btn-block">Egészség</a>
     </div>
+  </div>
+
   </div>
 </div>
 

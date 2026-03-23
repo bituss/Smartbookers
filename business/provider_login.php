@@ -316,7 +316,7 @@ include '../includes/header.php';
         <?php endforeach; ?>
       </select>
 
-      <div class="form-field form-field--full form-check">
+      <div class="form-field form-field--full form-check" style="margin-bottom:10px;">
         <input id="privacy" name="privacy" type="checkbox" required>
         <label for="privacy">
           Elfogadom az <a href="#" onclick="return false;" style="text-decoration: underline;">adatkezelési tájékoztatót</a>.
