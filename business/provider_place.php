@@ -84,6 +84,53 @@ $maxDate = date('Y-m-d', strtotime('+6 months'));
    - break: fix 15 perc (generálásnál)
    - sub_service_id mentése availability-be
 ========================= */
+/* =========================
+   Időpont törlés
+========================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_slot'])) {
+
+  $slotId = (int)($_POST['slot_id'] ?? 0);
+
+  if ($slotId > 0) {
+
+    // ellenőrizzük: van-e aktív foglalás rajta
+    $check = $mysqli->prepare("
+      SELECT b.id
+      FROM bookings b
+      JOIN provider_availability pa 
+        ON pa.provider_id = b.provider_id
+        AND DATE(b.booking_time) = pa.slot_date
+        AND TIME(b.booking_time) = pa.start_time
+      WHERE pa.id = ?
+      AND b.cancelled_at IS NULL
+      LIMIT 1
+    ");
+    $check->bind_param("i", $slotId);
+    $check->execute();
+
+    if ($check->get_result()->fetch_assoc()) {
+      $error = "Ehhez az időponthoz már van foglalás!";
+    } else {
+
+      // NEM töröljük, csak inaktívvá tesszük (profi megoldás)
+      $stmt = $mysqli->prepare("
+        UPDATE provider_availability
+        SET is_active = 0
+        WHERE id = ?
+        AND provider_id = ?
+        LIMIT 1
+      ");
+      $stmt->bind_param("ii", $slotId, $provider_id);
+      $stmt->execute();
+
+      if ($stmt->affected_rows > 0) {
+        $success = "Időpont sikeresen törölve.";
+      } else {
+        $error = "Nem sikerült törölni az időpontot.";
+      }
+    }
+  }
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_ranges'])) {
 
   $slot_date    = strv($_POST['slot_date'] ?? '');
@@ -376,6 +423,7 @@ foreach ($dayRanges as $r) {
     }
 
     $slots[] = [
+      'id' => $r['id'], // <<< EZ KELL!
       'time' => $hm,
       'status' => $status,
       'name' => $name,
@@ -746,6 +794,7 @@ Lemondások megjelölése olvasottnak
           <th>Státusz</th>
           <th>Ki foglalta</th>
           <th>Email</th>
+          <th>Művelet</th>
         </tr>
 
         <?php foreach($slots as $s): ?>
@@ -761,6 +810,16 @@ Lemondások megjelölése olvasottnak
             <td><span class="badge <?= $cls ?>"><span class="dot"></span><?= htmlspecialchars($s['status']) ?></span></td>
             <td><?= htmlspecialchars($s['name']) ?></td>
             <td><?= htmlspecialchars($s['email']) ?></td>
+            <td>
+  <?php if ($s['status'] === 'Szabad'): ?>
+    <form method="POST" onsubmit="return confirm('Biztos törlöd ezt az időpontot?');">
+      <input type="hidden" name="slot_id" value="<?= (int)$s['id'] ?>">
+      <button class="btnMini btnDel" name="delete_slot">Törlés</button>
+    </form>
+  <?php else: ?>
+    <span style="color:#999;font-size:12px;">Nem törölhető</span>
+  <?php endif; ?>
+</td>
           </tr>
         <?php endforeach; ?>
       </table>

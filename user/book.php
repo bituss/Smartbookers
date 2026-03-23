@@ -148,9 +148,9 @@ try {
 
   $mysqli->commit();
 
-  header("Location: /Smartbookers/user/profile.php");
+  header("Location: /Smartbookers/user/profile.php?success=booking");
   exit;
-
+  
 } catch (Throwable $e) {
   $mysqli->rollback();
   header("Location: /Smartbookers/user/dashboard.php?error=1&msg=" . urlencode("⚠️ Nem sikerült a foglalás."));

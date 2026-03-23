@@ -157,6 +157,9 @@ include '../includes/header.php';
       <input class="input" type="tel" name="phone" placeholder="Telefonszám" pattern="[0-9]{9,15}" required>
       <p>Jelszó: 🞴</p>
       <input class="input" type="password" name="password" placeholder="Jelszó (min. 6 karakter)" required>
+      <p style="margin:6px 0 0; font-size:13px; opacity:.85;">
+        Kötelező: legalább 6 karakter, 1 nagybetű, 1 szám, 1 speciális karakter.
+      </p>
       <p>Jelszó megerősítése: 🞴</p>
       <input class="input" type="password" name="password" placeholder="Jelszó megerősítése" required>
       <button class="primaryBtn" type="submit">Regisztráció</button>

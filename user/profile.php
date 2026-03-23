@@ -549,7 +549,105 @@ include '../includes/header.php';
     .userMeta{text-align:center;}
   }
 </style>
+<?php if (isset($_GET['success']) && $_GET['success'] === 'booking'): ?>
 
+<div id="successModal" class="modalOverlay">
+  <div class="modalBox">
+    <div class="icon">✔</div>
+    <h2>Sikeres foglalás</h2>
+    <p>Az időpontot sikeresen rögzítettük.</p>
+    <button onclick="closeModal()">Rendben</button>
+  </div>
+</div>
+
+<style>
+.modalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.55);
+  backdrop-filter: blur(4px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  animation: fadeIn 0.3s ease;
+}
+
+.modalBox{
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 18px;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+  animation: scaleIn 0.3s ease;
+}
+
+.modalBox h2{
+  margin: 10px 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.modalBox p{
+  color:#64748b;
+  margin-bottom:20px;
+  font-size:14px;
+}
+
+.modalBox .icon{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:#16a34a;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  margin:0 auto 10px;
+}
+
+.modalBox button{
+  padding:10px 18px;
+  border:none;
+  border-radius:10px;
+  font-weight:800;
+  background: linear-gradient(135deg,#24256e,#000);
+  color:white;
+  cursor:pointer;
+}
+
+.modalBox button:hover{
+  opacity:0.9;
+}
+
+/* Animációk */
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+@keyframes scaleIn{
+  from{transform:scale(0.8); opacity:0;}
+  to{transform:scale(1); opacity:1;}
+}
+</style>
+
+<script>
+function closeModal(){
+  document.getElementById("successModal").style.display = "none";
+}
+
+/* URL tisztítás */
+if (window.location.search.includes("success=booking")) {
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+</script>
+
+<?php endif; ?>
 <div class="wrap">
   <h1 class="title">Profilom</h1>
 
