@@ -725,7 +725,7 @@ Lemondások megjelölése olvasottnak
         </div>
 
         <div class="field">
-          <label>Al-szolgáltatás</label>
+          <label>AL-szolgáltatás</label>
           <select name="picked_sub_service_id" id="pickedSubService" required <?= (count($subServices)===0?'disabled':'') ?>>
             <option value="">Válassz...</option>
             <?php foreach($subServices as $ss): ?>
@@ -789,7 +789,7 @@ Lemondások megjelölése olvasottnak
       <table>
         <tr>
           <th>Idő</th>
-          <th>Al-szolgáltatás</th>
+          <th>AL-szolgáltatás</th>
           <th>Időtartam</th>
           <th>Státusz</th>
           <th>Ki foglalta</th>
