@@ -12,7 +12,9 @@ $mysqli = new mysqli("localhost", "root", "", "idopont_foglalas");
 $mysqli->set_charset("utf8mb4");
 
 $success = $_SESSION['success'] ?? "";
-unset($_SESSION['success']);
+$successType = $_SESSION['success_type'] ?? "";
+
+unset($_SESSION['success'], $_SESSION['success_type']);
 
 $error   = "";
 
@@ -96,43 +98,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_slot'])) {
   if ($slotId > 0) {
 
     // ellenőrizzük: van-e aktív foglalás rajta
-    $check = $mysqli->prepare("
-      SELECT b.id
-      FROM bookings b
-      JOIN provider_availability pa 
-        ON pa.provider_id = b.provider_id
-        AND DATE(b.booking_time) = pa.slot_date
-        AND TIME(b.booking_time) = pa.start_time
-      WHERE pa.id = ?
-      AND b.cancelled_at IS NULL
-      LIMIT 1
-    ");
-    $check->bind_param("i", $slotId);
-    $check->execute();
 
-    if ($check->get_result()->fetch_assoc()) {
-      $error = "Ehhez az időponthoz már van foglalás!";
-    } else {
+    $mysqli->begin_transaction();
 
-      // NEM töröljük, csak inaktívvá tesszük (profi megoldás)
+    try {
+    
+      // lekérjük a slot adatokat
+      $slotQ = $mysqli->prepare("
+        SELECT slot_date, start_time, sub_service_id
+        FROM provider_availability
+        WHERE id=? AND provider_id=?
+        LIMIT 1
+      ");
+      $slotQ->bind_param("ii", $slotId, $provider_id);
+      $slotQ->execute();
+      $slotData = $slotQ->get_result()->fetch_assoc();
+    
+      if (!$slotData) {
+        throw new Exception("Nem található időpont.");
+      }
+    
+      $slotDateTime = $slotData['slot_date'] . ' ' . $slotData['start_time'];
+    
+      // van-e foglalás?
+      $bookQ = $mysqli->prepare("
+        SELECT b.*, u.name, u.id as user_id
+        FROM bookings b
+        LEFT JOIN users u ON u.id = b.user_id
+        WHERE b.provider_id=?
+        AND b.booking_time=?
+        AND b.cancelled_at IS NULL
+        LIMIT 1
+      ");
+      $bookQ->bind_param("is", $provider_id, $slotDateTime);
+      $bookQ->execute();
+      $booking = $bookQ->get_result()->fetch_assoc();
+    
+      // HA VAN FOGLALÁS → töröljük + üzenet
+      if ($booking) {
+    
+        // 1. booking lemondása
+        $upd = $mysqli->prepare("
+          UPDATE bookings
+          SET cancelled_at = NOW()
+          WHERE id=?
+        ");
+        $upd->bind_param("i", $booking['id']);
+        $upd->execute();
+    
+        // 2. conversation keresés / létrehozás
+        $conv = $mysqli->prepare("
+          INSERT INTO conversations (user_id, provider_id)
+          VALUES (?, ?)
+          ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
+        ");
+        $conv->bind_param("ii", $booking['user_id'], $provider_id);
+        $conv->execute();
+        $conversationId = $mysqli->insert_id;
+    
+        // 3. alszolgáltatás neve
+        $ssQ = $mysqli->prepare("SELECT name FROM sub_services WHERE id=?");
+        $ssQ->bind_param("i", $slotData['sub_service_id']);
+        $ssQ->execute();
+        $ssName = $ssQ->get_result()->fetch_assoc()['name'] ?? '';
+    
+        // 4. üzenet
+        $msg = "Szia!\n"
+             . "Az időpontod lemondásra került a szolgáltató által.\n"
+             . "Időpont: " . date("Y-m-d H:i", strtotime($slotDateTime)) . "\n"
+             . "Szolgáltatás: " . $ssName;
+    
+        $insMsg = $mysqli->prepare("
+          INSERT INTO messages
+          (conversation_id, body, sender_role, sender_provider_id, booking_id, type)
+          VALUES (?, ?, 'provider', ?, ?, 'system')
+        ");
+        $insMsg->bind_param("isii", $conversationId, $msg, $provider_id, $booking['id']);
+        $insMsg->execute();
+      }
+    
+      // 5. SLOT inaktív
       $stmt = $mysqli->prepare("
         UPDATE provider_availability
         SET is_active = 0
         WHERE id = ?
-        AND provider_id = ?
-        LIMIT 1
       ");
-      $stmt->bind_param("ii", $slotId, $provider_id);
+      $stmt->bind_param("i", $slotId);
       $stmt->execute();
-
-      if ($stmt->affected_rows > 0) {
-        $success = "Időpont sikeresen törölve.";
-      } else {
-        $error = "Nem sikerült törölni az időpontot.";
-      }
+    
+      $mysqli->commit();
+      $success = "Időpont sikeresen törölve.";
+      $successType = "delete";
+    } catch (Throwable $e) {
+      $mysqli->rollback();
+      $error = $e->getMessage();
+    }
+      
     }
   }
-}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_ranges'])) {
 
   $slot_date    = strv($_POST['slot_date'] ?? '');
@@ -733,7 +797,13 @@ font-weight:700;
 
     <div class="icon">✔</div>
 
-    <h2>Sikeres bejelentkezés</h2>
+    <h2>
+<?php if($successType === 'delete'): ?>
+  Időpont törölve
+<?php else: ?>
+  Sikeres művelet
+<?php endif; ?>
+</h2>
 
     <p><?= htmlspecialchars($success) ?></p>
 
@@ -900,14 +970,16 @@ Lemondások megjelölése olvasottnak
             <td><?= htmlspecialchars($s['name']) ?></td>
             <td><?= htmlspecialchars($s['email']) ?></td>
             <td>
-  <?php if ($s['status'] === 'Szabad'): ?>
-    <form method="POST" onsubmit="return confirm('Biztos törlöd ezt az időpontot?');">
-      <input type="hidden" name="slot_id" value="<?= (int)$s['id'] ?>">
-      <button class="btnMini btnDel" name="delete_slot">Törlés</button>
-    </form>
-  <?php else: ?>
-    <span style="color:#999;font-size:12px;">Nem törölhető</span>
-  <?php endif; ?>
+            <form method="POST">
+  <input type="hidden" name="slot_id" value="<?= (int)$s['id'] ?>">
+  <input type="hidden" name="delete_slot" value="1">
+
+  <button type="button" class="btnMini btnDel" onclick="openDeleteModal(this)">
+    Törlés
+  </button>
+</form>
+
+  
 </td>
           </tr>
         <?php endforeach; ?>
@@ -1249,9 +1321,40 @@ renderCalendar();
 function closeModal(){
   document.getElementById("successModal").style.display = "none";
 }
+let deleteForm = null;
+
+function openDeleteModal(btn){
+  deleteForm = btn.closest('form');
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDelete(){
+  document.getElementById('deleteModal').style.display = 'none';
+}
+
+function submitDelete(){
+  if(deleteForm){
+    deleteForm.submit();
+  }
+}
 </script>
 
 
 <?php include '../includes/footer.php'; ?>
+<div id="deleteModal" class="modalOverlay" style="display:none;">
+  <div class="modalBox">
+
+    <div class="icon" style="background:#ef4444;">!</div>
+
+    <h2>Időpont törlése</h2>
+    <p>Biztosan törölni szeretnéd ezt az időpontot?</p>
+
+    <div style="display:flex; gap:10px; justify-content:center;">
+      <button onclick="submitDelete()" style="background:#ef4444;">Igen</button>
+      <button onclick="closeDelete()">Mégse</button>
+    </div>
+
+  </div>
+</div>
 </body>
 </html>
