@@ -73,7 +73,8 @@ if (!$user) die("Felhasználó nem található.");
 
 $currentAvatar = !empty($user['avatar']) ? (string)$user['avatar'] : "/Smartbookers/public/images/avatars/a1.png";
 
-$success = "";
+$success = $_SESSION['success'] ?? "";
+unset($_SESSION['success']);
 $error = "";
 
 /* dátum limit: ma -> +6 hónap */
@@ -437,8 +438,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
 
       // chatre dobás
       $createdConversationId = $conversationId;
-$bookingSuccess = true;
-
+      $_SESSION['success'] = "Foglalás sikeresen létrehozva.";
+      $_SESSION['open_chat'] = $conversationId;
+      
+      header("Location: /Smartbookers/public/profile.php");
+      exit;
     } catch (Throwable $e) {
       $mysqli->rollback();
       $error = $e->getMessage();
@@ -486,6 +490,7 @@ include '../includes/header.php';
 <body>
 
 <style>
+  
   body{font-family: Inter, sans-serif;background: linear-gradient(135deg, #24256e, #ffffff);margin:0;min-height:100vh;}
   .wrap{max-width:1200px; margin:30px auto; padding:0 12px;}
   .title{color:#fff; text-align:center; margin:0 0 18px;}
@@ -495,7 +500,7 @@ include '../includes/header.php';
   .userMeta h2{margin:0; color:#0f172a; font-size:20px;}
   .userMeta p{margin:4px 0 0; color:#475569;}
   .msg{margin-top:10px; font-weight:800;}
-  .ok{background-color: green; border-radius:6px; color:white; text-align:center; height:70px; width:300px;padding-top: 20px;}
+  
   .err{color:#ef4444;}
   .avatarDropdown{ width:100%; margin-top:12px; }
   .avatarToggle{
@@ -549,16 +554,22 @@ include '../includes/header.php';
     .userMeta{text-align:center;}
   }
 </style>
-<?php if (isset($_GET['success']) && $_GET['success'] === 'booking'): ?>
 
-<div id="successModal" class="modalOverlay">
+<?php if (!empty($success)): ?>
+<div class="modalOverlay" id="successModal">
   <div class="modalBox">
     <div class="icon">✔</div>
-    <h2>Sikeres foglalás</h2>
-    <p>Az időpontot sikeresen rögzítettük.</p>
+    
+    <h2>
+      <?= str_contains($success, 'lemondva') ? 'Sikeres lemondás' : 'Sikeres művelet' ?>
+    </h2>
+
+    <p><?= htmlspecialchars($success) ?></p>
+
     <button onclick="closeModal()">Rendben</button>
   </div>
 </div>
+<?php endif; ?>
 
 <style>
 .modalOverlay{
@@ -647,20 +658,20 @@ if (window.location.search.includes("success=booking")) {
 }
 </script>
 
-<?php endif; ?>
+
 <div class="wrap">
   <h1 class="title">Profilom</h1>
 
   <div class="topCard">
     <img class="avatarNow" src="<?= htmlspecialchars($currentAvatar, ENT_QUOTES, 'UTF-8') ?>" alt="Profilkép">
-
     <div class="userMeta">
-      <h2><?= htmlspecialchars((string)$user['name'], ENT_QUOTES, 'UTF-8') ?></h2>
-      <p><?= htmlspecialchars((string)$user['email'], ENT_QUOTES, 'UTF-8') ?></p>
+  <h2><?= htmlspecialchars((string)$user['name'], ENT_QUOTES, 'UTF-8') ?></h2>
+  <p><?= htmlspecialchars((string)$user['email'], ENT_QUOTES, 'UTF-8') ?></p>
 
-      <?php if($success): ?><div class="msg ok"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-      <?php if($error): ?><div class="msg err"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-    </div>
+  <?php if($error): ?>
+    <div class="msg err"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
+  <?php endif; ?>
+</div>
 
     <form method="post" style="width:100%;">
       <input type="hidden" name="set_avatar" value="1">
@@ -712,12 +723,26 @@ if (window.location.search.includes("success=booking")) {
                 (<?= htmlspecialchars((string)$appt['phone'], ENT_QUOTES, 'UTF-8') ?>)
               <?php endif; ?>
             </div>
+            <div id="confirmModal" class="modalOverlay" style="display:none;">
+  <div class="modalBox">
+    
+    <div class="icon" style="background:#ef4444;">!</div>
 
+    <h2>Foglalás lemondása</h2>
+    <p>Biztosan le szeretnéd mondani ezt az időpontot?</p>
+
+    <div style="display:flex; gap:10px; justify-content:center;">
+      <button onclick="submitCancel()" style="background:#ef4444;">Igen</button>
+      <button onclick="closeConfirm()">Mégse</button>
+    </div>
+
+  </div>
+</div>
             <form method="post">
               <input type="hidden" name="action" value="cancel_booking">
               <input type="hidden" name="booking_id" value="<?= (int)$appt['booking_id'] ?>">
-              <button class="cancelBtn" type="submit" onclick="return confirm('Biztosan lemondod ezt a foglalást?');">
-                Lemondás
+              <button type="button" class="cancelBtn" onclick="openConfirm(this)">
+              Lemondás
               </button>
             </form>
           </div>
@@ -749,6 +774,24 @@ if (window.location.search.includes("success=booking")) {
 </div>
 
 <script>
+
+let currentForm = null;
+
+function openConfirm(btn){
+  currentForm = btn.closest('form');
+  document.getElementById('confirmModal').style.display = 'flex';
+}
+
+function closeConfirm(){
+  document.getElementById('confirmModal').style.display = 'none';
+}
+
+function submitCancel(){
+  if(currentForm){
+    currentForm.submit();
+  }
+}
+
 (function(){
   const toggle = document.getElementById('avatarToggle');
   const panel  = document.getElementById('avatarPanel');

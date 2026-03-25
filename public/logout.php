@@ -1,32 +1,17 @@
 <?php
-// Indítsuk el a session-t, ha még nincs elindítva
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Töröljük az összes session változót
-$_SESSION = [];
+// 🔥 először állítsd be a siker üzenetet
+$_SESSION['logout_success'] = true;
 
-// Ha van session cookie, töröljük is
-if (ini_get("session.use_cookies")) {
-    $params = session_get_cookie_params();
-    setcookie(
-        session_name(),
-        '',
-        time() - 42000, // múltba állítjuk, hogy törlődjön
-        $params['path'],
-        $params['domain'],
-        $params['secure'],
-        $params['httponly']
-    );
-}
+// 🔥 csak a user adatokat töröljük (nem az egészet!)
+unset($_SESSION['user_id'], $_SESSION['role'], $_SESSION['avatar']);
 
-// Megsemmisítjük a session-t
-session_destroy();
+// ❗ NE destroy-old itt a session-t
 
-// Átirányítás az index.php-ra **biztonságos módon**
-// Ezzel relatív útvonalat használunk, így bárhol legyen a fájl, működik
-$indexPath = dirname($_SERVER['SCRIPT_NAME']) . '/index.php';
-header("Location: $indexPath");
+// redirect
+header("Location: /Smartbookers/public/index.php?logout=1");
 exit;
 ?>

@@ -340,6 +340,30 @@
 </section>
 
 
+
 <?php include '../includes/footer.php'; ?>
 
+
+<?php if(isset($_GET['logout']) && $_GET['logout'] == '1'): ?>
+  <div class="modalOverlay" id="logoutSuccess" style="display:flex;">
+  <div class="modalBox">
+
+    <div class="icon" style="background:#16a34a;">✔</div>
+
+    <h2>Sikeres kijelentkezés</h2>
+    <p>Sikeresen kijelentkeztél.</p>
+    
+
+    <button onclick="closeLogoutSuccess()" 
+      style="margin-top:15px; padding:10px 16px; border-radius:10px; background:#24256e; color:white; border:none;">
+      Rendben
+    </button>
+
+  </div>
+</div>
+
+
+<?php endif; ?>
+
 <script src="/Smartbookers/js/index.js"></script>
+

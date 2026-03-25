@@ -337,3 +337,18 @@
     }
   });
 })();
+
+let logoutUrl = "/Smartbookers/public/logout.php";
+
+function openLogoutConfirm(e){
+  e.preventDefault();
+  document.getElementById('logoutModal').style.display = 'flex';
+}
+
+function closeLogout(){
+  document.getElementById('logoutModal').style.display = 'none';
+}
+
+function confirmLogout(){
+  window.location.href = logoutUrl;
+}

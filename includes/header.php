@@ -54,6 +54,7 @@ $showIndustries = (!$logged_in) || ($role !== 'provider');
 <body>
 
 <header class="app-header">
+
   <div class="header-inner">
 
     <!-- LOGO -->
@@ -226,7 +227,7 @@ $showIndustries = (!$logged_in) || ($role !== 'provider');
           </button>
         </div>
 
-        <a href="/Smartbookers/public/logout.php" class="btn small danger">Kilépés</a>
+        <a href="#" onclick="openLogoutConfirm(event)" class="btn small danger">Kilépés</a>
 
       <?php else: ?>
 
@@ -404,7 +405,7 @@ $showIndustries = (!$logged_in) || ($role !== 'provider');
         Chat <span class="chat-badge" id="chatBadgeMobile" style="display:none;">0</span>
       </button>
 
-      <a href="/Smartbookers/public/logout.php" class="btn small danger">Kilépés</a>
+      <a href="#" onclick="openLogoutConfirm(event)" class="btn small danger">Kilépés</a>
 
     <?php else: ?>
 
@@ -446,5 +447,20 @@ $showIndustries = (!$logged_in) || ($role !== 'provider');
   <?php endif; ?>
 
 </header>
+<div id="logoutModal" class="modalOverlay" style="display:none;">
+  <div class="modalBox">
+
+    <div class="icon" style="background:#ef4444;">!</div>
+
+    <h2>Kijelentkezés</h2>
+    <p>Biztosan ki szeretnél jelentkezni?</p>
+
+    <div style="display:flex; gap:10px; justify-content:center;">
+      <button onclick="confirmLogout()" style="background:#ef4444;">Igen</button>
+      <button onclick="closeLogout()">Mégse</button>
+    </div>
+
+  </div>
+</div>
 
 <script src="/Smartbookers/js/header.js"></script>

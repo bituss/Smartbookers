@@ -13,7 +13,9 @@ document.querySelectorAll('.accordion-header').forEach((header) => {
     }
   });
 });
-
+function closeLogoutSuccess(){
+  document.getElementById('logoutSuccess').style.display = 'none';
+}
 /// Quick search routing (industry alapján) -> industry.php?slug=...
 (function(){
   const form = document.getElementById('quickSearch');
@@ -154,4 +156,9 @@ document.querySelectorAll('.accordion-header').forEach((header) => {
 
 
 
+function closeLogoutSuccess(){
+  document.getElementById('logoutSuccess').style.display = 'none';
 
+  // URL-ből kiszedjük a ?logout=1-et
+  window.history.replaceState({}, document.title, window.location.pathname);
+}

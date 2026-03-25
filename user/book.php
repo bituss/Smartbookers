@@ -148,8 +148,9 @@ try {
 
   $mysqli->commit();
 
-  header("Location: /Smartbookers/user/profile.php?success=booking");
-  exit;
+ $_SESSION['success'] = "Foglalás sikeresen létrehozva.";
+header("Location: /Smartbookers/user/profile.php");
+exit;
   
 } catch (Throwable $e) {
   $mysqli->rollback();

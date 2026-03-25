@@ -250,9 +250,55 @@ while ($row = $res->fetch_assoc()) {
     .btn{display:inline-flex;padding:10px 12px;border-radius:12px;font-weight:900;color:#fff;background:linear-gradient(135deg,#24256e,#000);white-space:nowrap;text-decoration:none;}
     .btn.light{background:#fff;color:#24256e;border:2px solid #24256e;}
     .empty{color:#64748b;font-weight:900;padding:10px 0;}
+    .modalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.55);
+  backdrop-filter: blur(4px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.modalBox{
+  background: #fff;
+  padding: 30px;
+  border-radius: 18px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+}
+
+.modalBox .icon{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  margin:0 auto 10px;
+}
 
     @media (max-width: 900px){.grid{grid-template-columns:repeat(2, minmax(0, 1fr));}}
     @media (max-width: 560px){.grid{grid-template-columns:1fr;}}
+    .spinner{
+  width:40px;
+  height:40px;
+  border:4px solid #e5e7eb;
+  border-top:4px solid #24256e;
+  border-radius:50%;
+  animation: spin 1s linear infinite;
+  margin:0 auto;
+}
+
+@keyframes spin{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
+}
   </style>
 </head>
 <body>
@@ -323,9 +369,13 @@ IPARÁG
                       <div class="dt"><?= htmlspecialchars($dt, ENT_QUOTES, 'UTF-8') ?></div>
 
                       <?php if ($isUser): ?>
-                        <a class="btn" href="/Smartbookers/user/book.php?availability_id=<?= (int)$s['availability_id'] ?>">
-                          Foglalás
-                        </a>
+                        <button class="btn"
+  onclick="openBookingConfirm(
+    <?= (int)$s['availability_id'] ?>,
+    '<?= htmlspecialchars($dt, ENT_QUOTES, 'UTF-8') ?>'
+  )">
+  Foglalás
+</button>
                       <?php else: ?>
                         <a class="btn light" href="/Smartbookers/public/login.php">
                           Jelentkezz be
@@ -349,14 +399,71 @@ IPARÁG
     <?php endforeach; ?>
 
   </div>
+  <div id="bookingModal" class="modalOverlay" style="display:none;">
+  <div class="modalBox">
 
+    <div class="icon" style="background:#24256e;">?</div>
+
+    <h2>Időpont foglalása</h2>
+
+    <p id="bookingText" style="font-weight:600;"></p>
+
+    <div style="display:flex; gap:10px; justify-content:center;">
+      <button onclick="confirmBooking()" style="background:#16a34a;">Igen</button>
+      <button onclick="closeBookingModal()">Mégse</button>
+    </div>
+    <div id="bookingLoader" style="display:none; margin-top:15px;">
+  <div class="spinner"></div>
+  <p style="margin-top:10px; font-weight:700;">Foglalás folyamatban...</p>
+</div>
+
+  </div>
+</div>
   <?php include '../includes/footer.php'; ?>
 
-  <?php if($subFilterId > 0 && $subFilterSlug !== ''): ?>
+ 
   <script>
+    let bookingUrl = null;
+
+function openBookingConfirm(id, datetime){
+  bookingUrl = "/Smartbookers/user/book.php?availability_id=" + id;
+
+  document.getElementById('bookingText').innerHTML =
+    "Biztosan lefoglalod ezt az időpontot?<br><strong>" + datetime + "</strong>";
+
+  document.getElementById('bookingModal').style.display = 'flex';
+}
+
+function closeBookingModal(){
+  document.getElementById('bookingModal').style.display = 'none';
+}
+
+function confirmBooking(){
+  if(!bookingUrl) return;
+
+  // gombok eltüntetése
+  document.querySelectorAll('#bookingModal button').forEach(btn => {
+    btn.style.display = 'none';
+  });
+
+  // loader mutatása
+  document.getElementById('bookingLoader').style.display = 'block';
+
+  // kis delay UX miatt
+  setTimeout(() => {
+    window.location.href = bookingUrl;
+  }, 800);
+}
+
     const el = document.getElementById("sub-<?= htmlspecialchars($subFilterSlug, ENT_QUOTES, 'UTF-8') ?>");
     if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
   </script>
-  <?php endif; ?>
+  <?php if($subFilterId > 0 && $subFilterSlug !== ''): ?>
+<script>
+const el = document.getElementById("sub-<?= htmlspecialchars($subFilterSlug, ENT_QUOTES, 'UTF-8') ?>");
+if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
+</script>
+<?php endif; ?>
+  
 </body>
 </html>
