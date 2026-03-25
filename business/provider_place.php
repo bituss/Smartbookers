@@ -11,7 +11,9 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'provider') {
 $mysqli = new mysqli("localhost", "root", "", "idopont_foglalas");
 $mysqli->set_charset("utf8mb4");
 
-$success = "";
+$success = $_SESSION['success'] ?? "";
+unset($_SESSION['success']);
+
 $error   = "";
 
 function strv($v): string { return trim((string)$v); }
@@ -352,6 +354,7 @@ LEFT JOIN bookings b
 ON DATE(b.booking_time)=pa.slot_date
 AND TIME(b.booking_time)=pa.start_time
 AND b.provider_id=pa.provider_id
+AND b.cancelled_at IS NULL
 WHERE pa.provider_id=?
 ORDER BY pa.slot_date, pa.start_time
 ");
@@ -649,15 +652,101 @@ font-weight:700;
   width:100%;
   overflow-x:auto;
 }
+.modalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.55);
+  backdrop-filter: blur(4px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  animation: fadeIn 0.3s ease;
+}
+
+.modalBox{
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 18px;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+  animation: scaleIn 0.3s ease;
+}
+
+.modalBox h2{
+  margin: 10px 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.modalBox p{
+  color:#64748b;
+  margin-bottom:20px;
+  font-size:14px;
+}
+
+.modalBox .icon{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:#16a34a;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  margin:0 auto 10px;
+}
+
+.modalBox button{
+  padding:10px 18px;
+  border:none;
+  border-radius:10px;
+  font-weight:800;
+  background: linear-gradient(135deg,#24256e,#000);
+  color:white;
+  cursor:pointer;
+}
+
+.modalBox button:hover{
+  opacity:0.9;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+@keyframes scaleIn{
+  from{transform:scale(0.8); opacity:0;}
+  to{transform:scale(1); opacity:1;}
+}
   </style>
 </head>
 <body>
+<?php if (!empty($success)): ?>
+<div class="modalOverlay" id="successModal">
+  <div class="modalBox">
 
+    <div class="icon">✔</div>
+
+    <h2>Sikeres bejelentkezés</h2>
+
+    <p><?= htmlspecialchars($success) ?></p>
+
+    <button onclick="closeModal()">Rendben</button>
+
+  </div>
+</div>
+<?php endif; ?>
 <div class="container">
   <h1>Üdv, <?= htmlspecialchars((string)$provider['owner_name'], ENT_QUOTES, 'UTF-8') ?>!</h1>
   <p class="center">Szolgáltatás: <strong><?= htmlspecialchars($service_name ?: '—', ENT_QUOTES, 'UTF-8') ?></strong></p>
 
-  <?php if($success): ?><div class="msg success"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+  
   <?php if($error): ?><div class="msg error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
 
     <?php if($cancelCount > 0): ?>
@@ -1157,6 +1246,9 @@ document.getElementById("dayPopup").style.display="none";
 }
 
 renderCalendar();
+function closeModal(){
+  document.getElementById("successModal").style.display = "none";
+}
 </script>
 
 

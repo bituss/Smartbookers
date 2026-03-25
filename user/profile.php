@@ -561,7 +561,17 @@ include '../includes/header.php';
     <div class="icon">✔</div>
     
     <h2>
-      <?= str_contains($success, 'lemondva') ? 'Sikeres lemondás' : 'Sikeres művelet' ?>
+    <?php
+$title = "Sikeres művelet";
+
+if (str_contains($success, 'lemondva')) {
+  $title = "Sikeres lemondás";
+}
+elseif (str_contains($success, 'bejelentkezés')) {
+  $title = "Sikeres bejelentkezés";
+}
+?>
+<h2><?= $title ?></h2>
     </h2>
 
     <p><?= htmlspecialchars($success) ?></p>

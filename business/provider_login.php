@@ -213,6 +213,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'login') {
         $_SESSION["user_id"] = (int)$userRow["id"];
         $_SESSION["name"]    = (string)$userRow["name"];
         $_SESSION["role"]    = "provider";
+        $_SESSION["success"] = "Sikeres bejelentkezés!";
 
         $_SESSION["provider_id"] = (int)$provider["id"];
         $_SESSION["service_id"]  = (int)$provider["service_id"];
