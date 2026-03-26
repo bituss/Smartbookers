@@ -120,27 +120,13 @@ try {
     "Szolgáltatás: " . ($subServiceName !== '' ? $subServiceName : '-') . "\n" .
     "Időpont: " . date("Y-m-d H:i", strtotime($dtStr));
 
-  // Ha van seen_by_user/provider oszlop, töltsük
-  $hasSeenUser = $mysqli->query("SHOW COLUMNS FROM messages LIKE 'seen_by_user'");
-  $hasSeenCols = ($hasSeenUser && $hasSeenUser->num_rows > 0);
-
-  if ($hasSeenCols) {
-    $msg = $mysqli->prepare("
-      INSERT IGNORE INTO messages
-        (conversation_id, body, sender_role, booking_id, type, seen_by_user, seen_by_provider)
-      VALUES
-        (?, ?, 'user', ?, 'booking_auto', 1, 0)
-    ");
-    $msg->bind_param("isi", $conversationId, $txt, $bookingId);
-  } else {
-    $msg = $mysqli->prepare("
-      INSERT IGNORE INTO messages
-        (conversation_id, body, sender_role, booking_id, type)
-      VALUES
-        (?, ?, 'system', ?, 'booking_auto')
-    ");
-    $msg->bind_param("isi", $conversationId, $txt, $bookingId);
-  }
+  $msg = $mysqli->prepare("
+    INSERT IGNORE INTO messages
+      (conversation_id, body, by_provider, type, seen_by_user, seen_by_provider)
+    VALUES
+      (?, ?, 0, 'booking_auto', 1, 0)
+  ");
+  $msg->bind_param("is", $conversationId, $txt);
 
   if (!$msg->execute()) {
     throw new Exception("Nem sikerült az automata üzenet mentése.");

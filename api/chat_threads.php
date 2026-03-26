@@ -62,7 +62,7 @@ if ($role === 'user') {
        FROM messages m2
        WHERE m2.conversation_id=c.id
          AND m2.seen_by_user=0
-         AND m2.sender_role='provider') AS unread_count
+         AND m2.by_provider=1) AS unread_count
 
     FROM conversations c
     JOIN providers p ON p.id = c.provider_id
@@ -93,7 +93,7 @@ if ($role === 'user') {
        FROM messages m2
        WHERE m2.conversation_id=c.id
          AND m2.seen_by_provider=0
-         AND m2.sender_role='user') AS unread_count
+         AND m2.by_provider=0) AS unread_count
 
     FROM conversations c
     JOIN users u ON u.id = c.user_id

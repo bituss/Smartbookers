@@ -21,15 +21,6 @@ try {
 $error = "";
 $success = "";
 
-/* ===== user role id (roles táblából) ===== */
-$roleUserId = 0;
-try {
-  $r = $pdo->prepare("SELECT id FROM roles WHERE name='user' LIMIT 1");
-  $r->execute();
-  $roleUserId = (int)($r->fetchColumn() ?: 0);
-} catch (Throwable $e) {
-  $roleUserId = 0;
-}
 
 /* ===== MELYIK MŰVELET? login / register ===== */
 $action = (string)($_POST['action'] ?? 'login');
@@ -48,8 +39,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'register') {
     $error = "Hibás email formátum.";
   } elseif (mb_strlen($password) < 6) {
     $error = "A jelszó legyen legalább 6 karakter.";
-  } elseif ($roleUserId <= 0) {
-    $error = "Hiba: nincs 'user' szerepkör a roles táblában.";
   } else {
     $chk = $pdo->prepare("SELECT id FROM users WHERE email=? LIMIT 1");
     $chk->execute([$email]);
@@ -60,8 +49,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'register') {
       $hash = password_hash($password, PASSWORD_DEFAULT);
 
       try {
-        $ins = $pdo->prepare("INSERT INTO users (name,email,password,role_id) VALUES (?,?,?,?)");
-        $ins->execute([$name, $email, $hash, $roleUserId]);
+        $ins = $pdo->prepare("INSERT INTO users (name,email,password,role) VALUES (?,?,?,'user')");
+        $ins->execute([$name, $email, $hash]);
 
         $success = "Sikeres regisztráció! Most már be tudsz jelentkezni.";
         $action = 'login';
@@ -80,9 +69,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'login') {
   $password = (string)($_POST["password"] ?? '');
 
   $stmt = $pdo->prepare("
-      SELECT u.*, r.name AS role_name
+      SELECT u.*, u.role AS role_name
       FROM users u
-      JOIN roles r ON r.id = u.role_id
       WHERE u.email = ?
       LIMIT 1
   ");

@@ -95,13 +95,13 @@ if ($role === 'user') {
   $stmt = $mysqli->prepare("
     UPDATE messages
     SET seen_by_user=1
-    WHERE conversation_id=? AND sender_role='provider'
+    WHERE conversation_id=? AND by_provider=1
   ");
 } else {
   $stmt = $mysqli->prepare("
     UPDATE messages
     SET seen_by_provider=1
-    WHERE conversation_id=? AND sender_role='user'
+    WHERE conversation_id=? AND by_provider=0
   ");
 }
 $stmt->bind_param("i", $conversationId);
@@ -111,7 +111,7 @@ $stmt->execute();
  * Üzenetek (kezdeti betöltés)
  */
 $stmt = $mysqli->prepare("
-  SELECT id, sender_role, body, created_at
+  SELECT id, by_provider, body, created_at
   FROM messages
   WHERE conversation_id=?
   ORDER BY id ASC
@@ -152,7 +152,7 @@ $lastId = 0;
     <div class="msgs" id="msgs">
       <?php while($m = $msgs->fetch_assoc()):
         $lastId = max($lastId, (int)$m['id']);
-        $isMe = ($role === (string)$m['sender_role']);
+        $isMe = ($role === 'provider') ? (bool)$m['by_provider'] : !(bool)$m['by_provider'];
       ?>
         <div class="m <?= $isMe ? 'me' : 'other' ?>" data-id="<?= (int)$m['id'] ?>">
           <?= nl2br(htmlspecialchars((string)$m['body'], ENT_QUOTES, 'UTF-8')) ?>

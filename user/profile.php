@@ -395,39 +395,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
       $chkMsg->execute();
       $existing = $chkMsg->get_result()->fetch_assoc();
 
-      $hasSeenUser = hasColumn($mysqli, "messages", "seen_by_user");
-      $hasSeenProv = hasColumn($mysqli, "messages", "seen_by_provider");
-
       if ($existing) {
         $msgId = (int)$existing['id'];
         $upd = $mysqli->prepare("
           UPDATE messages
-          SET body=?, booking_id=?, sender_role='user', sender_user_id=?, sender_provider_id=NULL
+          SET body=?, by_provider=0
           WHERE id=? AND conversation_id=?
         ");
-        $upd->bind_param("siiii", $txt, $bookingId, $user_id, $msgId, $conversationId);
+        $upd->bind_param("sii", $txt, $msgId, $conversationId);
 
         if (!$upd->execute()) {
           throw new Exception("Nem sikerült az automata üzenet frissítése.");
         }
       } else {
-        if ($hasSeenUser && $hasSeenProv) {
-          $msg = $mysqli->prepare("
-            INSERT INTO messages
-              (conversation_id, body, sender_role, sender_user_id, sender_provider_id, booking_id, type, seen_by_user, seen_by_provider)
-            VALUES
-              (?, ?, 'user', ?, NULL, ?, 'booking_auto', 1, 0)
-          ");
-          $msg->bind_param("isii", $conversationId, $txt, $user_id, $bookingId);
-        } else {
-          $msg = $mysqli->prepare("
-            INSERT INTO messages
-              (conversation_id, body, sender_role, sender_user_id, sender_provider_id, booking_id, type)
-            VALUES
-              (?, ?, 'user', ?, NULL, ?, 'booking_auto')
-          ");
-          $msg->bind_param("isii", $conversationId, $txt, $user_id, $bookingId);
-        }
+        $msg = $mysqli->prepare("
+          INSERT INTO messages
+            (conversation_id, body, by_provider, type, seen_by_user, seen_by_provider)
+          VALUES
+            (?, ?, 0, 'booking_auto', 1, 0)
+        ");
+        $msg->bind_param("is", $conversationId, $txt);
 
         if (!$msg->execute()) {
           throw new Exception("Nem sikerült az automata üzenet mentése.");

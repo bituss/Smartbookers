@@ -170,10 +170,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_slot'])) {
     
         $insMsg = $mysqli->prepare("
           INSERT INTO messages
-          (conversation_id, body, sender_role, sender_provider_id, booking_id, type)
-          VALUES (?, ?, 'provider', ?, ?, 'system')
+          (conversation_id, body, by_provider, type, seen_by_user, seen_by_provider)
+          VALUES (?, ?, 1, 'system', 0, 1)
         ");
-        $insMsg->bind_param("isii", $conversationId, $msg, $provider_id, $booking['id']);
+        $insMsg->bind_param("is", $conversationId, $msg);
         $insMsg->execute();
       }
     

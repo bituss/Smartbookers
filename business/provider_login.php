@@ -31,16 +31,6 @@ try {
   $error = "Hiba a szolgáltatások betöltésekor: " . $e->getMessage();
 }
 
-/* ===== provider role id ===== */
-$roleProviderId = 0;
-try {
-  $r = $pdo->prepare("SELECT id FROM roles WHERE name='provider' LIMIT 1");
-  $r->execute();
-  $roleProviderId = (int)($r->fetchColumn() ?: 0);
-} catch (Throwable $e) {
-  $roleProviderId = 0;
-  $error = "Hiba: nem található 'provider' szerepkör a roles táblában.";
-}
 
 /* ===== action ===== */
 $action = (string)($_POST['action'] ?? 'login');
@@ -95,9 +85,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'register') {
   } elseif (!isStrongPassword($password)) {
     $error = "A jelszónak legalább 6 karakteresnek kell lennie, és tartalmaznia kell: 1 nagybetűt, 1 számot és 1 speciális karaktert.";
 
-  } elseif ($roleProviderId <= 0) {
-    $error = "Nincs 'provider' szerepkör a roles táblában.";
-
   } else {
 
     // email foglalt?
@@ -130,8 +117,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'register') {
 
           // 2) user
           $hash = password_hash($password, PASSWORD_DEFAULT);
-          $insU = $pdo->prepare("INSERT INTO users (name,email,password,role_id) VALUES (?,?,?,?)");
-          $insU->execute([$name, $email, $hash, $roleProviderId]);
+          $insU = $pdo->prepare("INSERT INTO users (name,email,password,role) VALUES (?,?,?,'provider')");
+          $insU->execute([$name, $email, $hash]);
           $newUserId = (int)$pdo->lastInsertId();
 
           // 3) provider (user_id + service_id + cím)
@@ -176,9 +163,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'login') {
 
   // 1) user + role
   $stmt = $pdo->prepare("
-    SELECT u.*, r.name AS role_name
+    SELECT u.*, u.role AS role_name
     FROM users u
-    JOIN roles r ON r.id = u.role_id
     WHERE u.email = ?
     LIMIT 1
   ");

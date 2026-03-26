@@ -93,20 +93,16 @@ $convProviderId = (int)$conv['provider_id'];
 $st = $mysqli->prepare("
   SELECT
     m.id,
-    m.sender_role,
+    m.by_provider,
     m.body,
     m.created_at,
-
     CASE
-      WHEN m.sender_role='user' THEN COALESCE(NULLIF(u.avatar,''), ?)
-      WHEN m.sender_role='provider' THEN COALESCE(NULLIF(p.avatar,''), ?)
-      ELSE ?
+      WHEN m.by_provider=0 THEN COALESCE(NULLIF(u.avatar,''), ?)
+      ELSE COALESCE(NULLIF(p.avatar,''), ?)
     END AS avatar
-
   FROM messages m
   LEFT JOIN users u ON u.id = ?
   LEFT JOIN providers p ON p.id = ?
-
   WHERE m.conversation_id=?
   ORDER BY m.created_at ASC, m.id ASC
 ");
@@ -114,10 +110,9 @@ $st = $mysqli->prepare("
 if (!$st) out(['ok'=>false,'error'=>'SQL hiba (messages).'], 500);
 
 $st->bind_param(
-  "sssiii",
-  $defaultAvatar, // user fallback
-  $defaultAvatar, // provider fallback
-  $defaultAvatar, // system fallback
+  "ssiii",
+  $defaultAvatar, // user avatar fallback
+  $defaultAvatar, // provider avatar fallback
   $convUserId,
   $convProviderId,
   $cid
@@ -129,17 +124,17 @@ $res = $st->get_result();
 $messages = [];
 while ($m = $res->fetch_assoc()) {
 
-  $senderRole = (string)$m['sender_role'];
+  $byProvider = (int)$m['by_provider'];
 
   // én írtam-e?
-  $isMe = ($role === 'user' && $senderRole === 'user')
-       || ($role === 'provider' && $senderRole === 'provider');
+  $isMe = ($role === 'user' && $byProvider === 0)
+       || ($role === 'provider' && $byProvider === 1);
 
   $messages[] = [
     'id'          => (int)$m['id'],
     'body'        => (string)$m['body'],
     'created_at'  => (string)$m['created_at'],
-    'sender_role' => $senderRole,
+    'by_provider' => $byProvider,
     'avatar'      => (string)$m['avatar'],
     'is_me'       => $isMe,
   ];
@@ -153,7 +148,7 @@ if ($role === 'user') {
   $st = $mysqli->prepare("
     UPDATE messages
     SET seen_by_user=1
-    WHERE conversation_id=? AND sender_role='provider'
+    WHERE conversation_id=? AND by_provider=1
   ");
   if ($st) {
     $st->bind_param("i", $cid);
@@ -163,7 +158,7 @@ if ($role === 'user') {
   $st = $mysqli->prepare("
     UPDATE messages
     SET seen_by_provider=1
-    WHERE conversation_id=? AND sender_role='user'
+    WHERE conversation_id=? AND by_provider=0
   ");
   if ($st) {
     $st->bind_param("i", $cid);

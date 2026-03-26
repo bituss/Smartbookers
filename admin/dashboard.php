@@ -3,7 +3,7 @@
 $pdo = new PDO('mysql:host=localhost;dbname=idopont_foglalas;charset=utf8mb4','root','',
   [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
-$userCount     = $pdo->query("SELECT COUNT(*) FROM users u JOIN roles r ON r.id=u.role_id WHERE r.name='user'")->fetchColumn();
+$userCount     = $pdo->query("SELECT COUNT(*) FROM users WHERE role='user'")->fetchColumn();
 $providerCount = $pdo->query("SELECT COUNT(*) FROM providers")->fetchColumn();
 $activeBook    = $pdo->query("SELECT COUNT(*) FROM bookings WHERE cancelled_at IS NULL")->fetchColumn();
 $cancelledBook = $pdo->query("SELECT COUNT(*) FROM bookings WHERE cancelled_at IS NOT NULL")->fetchColumn();

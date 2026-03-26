@@ -73,26 +73,21 @@ if (!$st->get_result()->fetch_assoc()) {
 }
 
 /**
- * Mentés:
- * - sender_role: 'user' vagy 'provider'
- * - sender_user_id:
- *    user -> users.id
- *    provider -> providers.id  (FONTOS: nem a users.id!)
+ * Mentés
  */
-$senderUserId = ($role === 'user') ? $userId : $providerId;
-
+$byProvider = ($role === 'provider') ? 1 : 0;
 $seenByUser = ($role === 'user') ? 1 : 0;
 $seenByProv = ($role === 'provider') ? 1 : 0;
 
 $st = $mysqli->prepare("
   INSERT INTO messages
-    (conversation_id, sender_role, sender_user_id, body, seen_by_user, seen_by_provider)
+    (conversation_id, by_provider, body, seen_by_user, seen_by_provider)
   VALUES
-    (?, ?, ?, ?, ?, ?)
+    (?, ?, ?, ?, ?)
 ");
 if (!$st) out(['ok'=>false,'msg'=>'SQL hiba (insert message).'], 500);
 
-$st->bind_param("isissi", $conversationId, $role, $senderUserId, $body, $seenByUser, $seenByProv);
+$st->bind_param("iisii", $conversationId, $byProvider, $body, $seenByUser, $seenByProv);
 
 if (!$st->execute()) {
   out(['ok' => false, 'msg' => 'Nem sikerült menteni.'], 500);

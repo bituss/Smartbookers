@@ -28,9 +28,8 @@ if ($search !== '') {
 }
 
 $stmt = $pdo->prepare("
-  SELECT u.id, u.name, u.email, r.name AS role_name, u.created_at
+  SELECT u.id, u.name, u.email, u.role AS role_name, u.created_at
   FROM users u
-  JOIN roles r ON r.id = u.role_id
   $where
   ORDER BY u.id DESC
 ");

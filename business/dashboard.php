@@ -34,65 +34,53 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "Érvénytelen tevékenység!";
     } else {
 
-        // role_id = provider lekérdezés
-        $roleStmt = $mysqli->prepare("SELECT id FROM roles WHERE name = 'provider' LIMIT 1");
-        $roleStmt->execute();
-        $roleRes = $roleStmt->get_result();
-        $roleRow = $roleRes ? $roleRes->fetch_assoc() : null;
+        // service_id lekérdezés a services táblából
+        $svcStmt = $mysqli->prepare("SELECT id FROM services WHERE name = ? LIMIT 1");
+        $svcStmt->bind_param("s", $service_name);
+        $svcStmt->execute();
+        $svcRes = $svcStmt->get_result();
+        $svcRow = $svcRes ? $svcRes->fetch_assoc() : null;
 
-        if (!$roleRow) {
-            $error = "Hiba: nincs 'provider' szerepkör a roles táblában.";
+        if (!$svcRow) {
+            $error = "Hiba: a választott szolgáltatás nincs a services táblában: " . htmlspecialchars($service_name, ENT_QUOTES, 'UTF-8');
         } else {
-            $providerRoleId = (int)$roleRow['id'];
+            $serviceId = (int)$svcRow['id'];
 
-            // service_id lekérdezés a services táblából
-            $svcStmt = $mysqli->prepare("SELECT id FROM services WHERE name = ? LIMIT 1");
-            $svcStmt->bind_param("s", $service_name);
-            $svcStmt->execute();
-            $svcRes = $svcStmt->get_result();
-            $svcRow = $svcRes ? $svcRes->fetch_assoc() : null;
+            $hashed = password_hash($password, PASSWORD_DEFAULT);
 
-            if (!$svcRow) {
-                $error = "Hiba: a választott szolgáltatás nincs a services táblában: " . htmlspecialchars($service_name, ENT_QUOTES, 'UTF-8');
-            } else {
-                $serviceId = (int)$svcRow['id'];
+            // tranzakció: users + providers együtt
+            $mysqli->begin_transaction();
 
-                $hashed = password_hash($password, PASSWORD_DEFAULT);
-
-                // tranzakció: users + providers együtt
-                $mysqli->begin_transaction();
-
-                try {
-                    // 1) users beszúrás (role_id)
-                    $uStmt = $mysqli->prepare("
-                        INSERT INTO users (name, email, password, role_id)
-                        VALUES (?, ?, ?, ?)
-                    ");
-                    $uStmt->bind_param("sssi", $name, $email, $hashed, $providerRoleId);
-                    $uStmt->execute();
+            try {
+                // 1) users beszúrás
+                $uStmt = $mysqli->prepare("
+                    INSERT INTO users (name, email, password, role)
+                    VALUES (?, ?, ?, 'provider')
+                ");
+                $uStmt->bind_param("sss", $name, $email, $hashed);
+                $uStmt->execute();
 
                     $newUserId = $mysqli->insert_id;
 
-                    // 2) providers beszúrás (user_id + service_id + business_name)
-                    $pStmt = $mysqli->prepare("
-                        INSERT INTO providers (user_id, business_name, service_id, created_at)
-                        VALUES (?, ?, ?, NOW())
-                    ");
-                    $pStmt->bind_param("isi", $newUserId, $name, $serviceId);
-                    $pStmt->execute();
+                // 2) providers beszúrás (user_id + service_id + business_name)
+                $pStmt = $mysqli->prepare("
+                    INSERT INTO providers (user_id, business_name, service_id, created_at)
+                    VALUES (?, ?, ?, NOW())
+                ");
+                $pStmt->bind_param("isi", $newUserId, $name, $serviceId);
+                $pStmt->execute();
 
-                    $mysqli->commit();
-                    $success = "Sikeres regisztráció! Most már bejelentkezhetsz.";
+                $mysqli->commit();
+                $success = "Sikeres regisztráció! Most már bejelentkezhetsz.";
 
-                } catch (mysqli_sql_exception $e) {
-                    $mysqli->rollback();
+            } catch (mysqli_sql_exception $e) {
+                $mysqli->rollback();
 
-                    // ha duplicate email, szebb hiba
-                    if (str_contains($e->getMessage(), 'Duplicate')) {
-                        $error = "Ez az email már létezik.";
-                    } else {
-                        $error = "Hiba történt a regisztráció során: " . $e->getMessage();
-                    }
+                // ha duplicate email, szébb hiba
+                if (str_contains($e->getMessage(), 'Duplicate')) {
+                    $error = "Ez az email már létezik.";
+                } else {
+                    $error = "Hiba történt a regisztráció során: " . $e->getMessage();
                 }
             }
         }

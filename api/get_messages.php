@@ -76,7 +76,7 @@ if (!$st->get_result()->fetch_assoc()) {
  * 3) Üzenetek lekérése after_id-tól
  */
 $st = $mysqli->prepare("
-  SELECT id, sender_role, body, created_at
+  SELECT id, by_provider, body, created_at
   FROM messages
   WHERE conversation_id=? AND id>?
   ORDER BY id ASC
@@ -90,14 +90,14 @@ $res = $st->get_result();
 
 $messages = [];
 while ($row = $res->fetch_assoc()) {
-  $senderRole = (string)$row['sender_role'];
+  $byProvider = (int)$row['by_provider'];
 
-  $isMe = ($role === 'user' && $senderRole === 'user')
-       || ($role === 'provider' && $senderRole === 'provider');
+  $isMe = ($role === 'user' && $byProvider === 0)
+       || ($role === 'provider' && $byProvider === 1);
 
   $messages[] = [
     'id'          => (int)$row['id'],
-    'sender_role' => $senderRole,
+    'by_provider' => $byProvider,
     'body'        => (string)$row['body'],
     'created_at'  => (string)$row['created_at'],
     'is_me'       => $isMe,
@@ -111,7 +111,7 @@ if ($role === 'user') {
   $st = $mysqli->prepare("
     UPDATE messages
     SET seen_by_user=1
-    WHERE conversation_id=? AND sender_role='provider'
+    WHERE conversation_id=? AND by_provider=1
   ");
   if ($st) {
     $st->bind_param("i", $conversationId);
@@ -121,7 +121,7 @@ if ($role === 'user') {
   $st = $mysqli->prepare("
     UPDATE messages
     SET seen_by_provider=1
-    WHERE conversation_id=? AND sender_role='user'
+    WHERE conversation_id=? AND by_provider=0
   ");
   if ($st) {
     $st->bind_param("i", $conversationId);

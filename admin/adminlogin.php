@@ -24,10 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       );
 
       $stmt = $pdo->prepare("
-        SELECT u.id, u.name, u.password, r.name AS role_name
+        SELECT u.id, u.name, u.password, u.role AS role_name
         FROM users u
-        JOIN roles r ON r.id = u.role_id
-        WHERE u.email = :email AND r.name = 'admin'
+        WHERE u.email = :email AND u.role = 'admin'
         LIMIT 1
       ");
       $stmt->execute([':email' => $email]);
