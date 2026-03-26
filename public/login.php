@@ -87,8 +87,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'login') {
       $_SESSION["role"]    = "user";
       $_SESSION["success"] = "Sikeres bejelentkezés!";
 
-      if($_SESSION["book_provider"] && $_SESSION["book_provider"] != null) {
-        header("Location: /Smartbookers/user/book_provider.php?provider_id={$_SESSION["book_provider"]}");
+      if (!empty($_SESSION['book_provider'])) {
+        header('Location: /Smartbookers/user/book_provider.php?provider_id=' . (int)$_SESSION['book_provider']);
       } else {
         header("Location: /Smartbookers/user/profile.php");
       }
