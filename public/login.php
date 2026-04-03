@@ -1,104 +1,11 @@
 <?php
 session_start();
 
-/* ===== ADATBÁZIS KAPCSOLAT (PDO) ===== */
-$host = "localhost";
-$db   = "idopont_foglalas";
-$user = "root";
-$pass = "";
-
-try {
-  $pdo = new PDO(
-    "mysql:host=$host;dbname=$db;charset=utf8mb4",
-    $user,
-    $pass,
-    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-  );
-} catch (PDOException $e) {
-  die("Hiba az adatbázishoz való kapcsolódáskor: " . $e->getMessage());
-}
-
-$error = "";
-$success = "";
-
-
-/* ===== MELYIK MŰVELET? login / register ===== */
-$action = (string)($_POST['action'] ?? 'login');
-
-/* =========================================================
-   REGISZTRÁCIÓ (Felhasználó)
-========================================================= */
-if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'register') {
-  $name     = trim((string)($_POST["name"] ?? ''));
-  $email    = trim((string)($_POST["email"] ?? ''));
-  $password = (string)($_POST["password"] ?? '');
-
-  if ($name === '' || $email === '' || $password === '') {
-    $error = "Minden mező kitöltése kötelező!";
-  } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $error = "Hibás email formátum.";
-  } elseif (mb_strlen($password) < 6) {
-    $error = "A jelszó legyen legalább 6 karakter.";
-  } else {
-    $chk = $pdo->prepare("SELECT id FROM users WHERE email=? LIMIT 1");
-    $chk->execute([$email]);
-
-    if ($chk->fetchColumn()) {
-      $error = "Ez az email már létezik.";
-    } else {
-      $hash = password_hash($password, PASSWORD_DEFAULT);
-
-      try {
-        $ins = $pdo->prepare("INSERT INTO users (name,email,password,role) VALUES (?,?,?,'user')");
-        $ins->execute([$name, $email, $hash]);
-
-        $success = "Sikeres regisztráció! Most már be tudsz jelentkezni.";
-        $action = 'login';
-      } catch (Throwable $e) {
-        $error = "Hiba regisztráció közben: " . $e->getMessage();
-      }
-    }
-  }
-}
-
-/* =========================================================
-   BELÉPÉS (Csak USER) + REDIRECT (MÉG NINCS HTML!)
-========================================================= */
-if ($_SERVER["REQUEST_METHOD"] === "POST" && $action === 'login') {
-  $email    = trim((string)($_POST["email"] ?? ''));
-  $password = (string)($_POST["password"] ?? '');
-
-  $stmt = $pdo->prepare("
-      SELECT u.*, u.role AS role_name
-      FROM users u
-      WHERE u.email = ?
-      LIMIT 1
-  ");
-  $stmt->execute([$email]);
-  $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
-
-  if ($userRow && password_verify($password, $userRow["password"])) {
-
-    if (($userRow['role_name'] ?? '') !== 'user') {
-      $error = "Ez a fiók nem felhasználói belépésre való.";
-    } else {
-      $_SESSION["user_id"] = (int)$userRow["id"];
-      $_SESSION["name"]    = (string)$userRow["name"];
-      $_SESSION["role"]    = "user";
-      $_SESSION["success"] = "Sikeres bejelentkezés!";
-
-      if (!empty($_SESSION['book_provider'])) {
-        header('Location: /Smartbookers/user/book_provider.php?provider_id=' . (int)$_SESSION['book_provider']);
-      } else {
-        header("Location: /Smartbookers/user/profile.php");
-      }
-      exit;
-    }
-
-  } else {
-    $error = "Hibás email vagy jelszó.";
-  }
-}
+// Get any session messages from previous redirects
+$sessionSuccess = $_SESSION['success'] ?? '';
+$sessionError = $_SESSION['error'] ?? '';
+unset($_SESSION['success']);
+unset($_SESSION['error']);
 
 /* ===== CSAK MOST JÖHET HTML (header include) ===== */
 include '../includes/header.php';
@@ -111,13 +18,7 @@ include '../includes/header.php';
   <div class="card">
     <h2>Bejelentkezés</h2>
 
-    <?php if($error): ?>
-      <div class="msg"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
-    <?php endif; ?>
-
-    <?php if($success): ?>
-      <div class="msg success"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div>
-    <?php endif; ?>
+    <div id="msgContainer"></div>
 
     <div class="tabRow">
       <button type="button" id="tabLogin" class="tabBtn">Belépés</button>
@@ -125,9 +26,7 @@ include '../includes/header.php';
     </div>
 
     <!-- LOGIN -->
-     
-    <form method="POST" id="loginForm" novalidate>
-      <input type="hidden" name="action" value="login">
+    <form id="loginForm" novalidate>
       <p>Email cím: </p>
       <input class="input" type="email" name="email" placeholder="Email cím" required>
       <p>Jelszó: </p>
@@ -136,21 +35,18 @@ include '../includes/header.php';
     </form>
 
     <!-- REGISTER -->
-    <form method="POST" id="registerForm" novalidate style="display:none; margin-top:10px;">
-      <input type="hidden" name="action" value="register">
+    <form id="registerForm" novalidate style="display:none; margin-top:10px;">
       <p>Név: 🞴</p>
       <input class="input" type="text" name="name" placeholder="Név" required>
       <p>Email cím: 🞴</p>
       <input class="input" type="email" name="email" placeholder="Email cím" required>
-      <p>Telefonszám: 🞴</p>
-      <input class="input" type="tel" name="phone" placeholder="Telefonszám" pattern="[0-9]{9,15}" required>
       <p>Jelszó: 🞴</p>
       <input class="input" type="password" name="password" placeholder="Jelszó (min. 6 karakter)" required>
       <p style="margin:6px 0 0; font-size:13px; opacity:.85;">
         Kötelező: legalább 6 karakter, 1 nagybetű, 1 szám, 1 speciális karakter.
       </p>
       <p>Jelszó megerősítése: 🞴</p>
-      <input class="input" type="password" name="password" placeholder="Jelszó megerősítése" required>
+      <input class="input" type="password" name="password_confirm" placeholder="Jelszó megerősítése" required>
       <button class="primaryBtn" type="submit">Regisztráció</button>
     </form>
   </div>
@@ -162,6 +58,7 @@ include '../includes/header.php';
   const tabRegister = document.getElementById('tabRegister');
   const loginForm = document.getElementById('loginForm');
   const registerForm = document.getElementById('registerForm');
+  const msgContainer = document.getElementById('msgContainer');
 
   function setTab(which){
     if(which === 'register'){
@@ -177,11 +74,115 @@ include '../includes/header.php';
     }
   }
 
-  tabLogin.addEventListener('click', ()=>setTab('login'));
-  tabRegister.addEventListener('click', ()=>setTab('register'));
+  function showMessage(message, isError = false) {
+    msgContainer.innerHTML = `<div class="msg ${isError ? 'error' : 'success'}">${message}</div>`;
+    msgContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 
-  const hadRegisterError = <?= json_encode($error !== '' && (($_POST['action'] ?? '') === 'register')) ?>;
-  setTab(hadRegisterError ? 'register' : 'login');
+  function clearMessage() {
+    msgContainer.innerHTML = '';
+  }
+
+  // LOGIN FORM SUBMIT
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMessage();
+
+    const formData = new FormData(loginForm);
+    const data = {
+      email: formData.get('email'),
+      password: formData.get('password')
+    };
+
+    try {
+      const response = await fetch('/Smartbookers/api/auth/login.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        showMessage(result.message);
+
+        // Redirect after 1 second based on role
+        const role = result.user?.role || 'user';
+        const target = role === 'provider' ? '/Smartbookers/business/provider_place.php' : '/Smartbookers/user/profile.php';
+
+        setTimeout(() => {
+          window.location.href = target;
+        }, 1000);
+      } else {
+        showMessage(result.message, true);
+      }
+    } catch (error) {
+      showMessage('Hálózati hiba történt.', true);
+    }
+  });
+
+  // REGISTER FORM SUBMIT
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMessage();
+
+    const formData = new FormData(registerForm);
+    const password = formData.get('password');
+    const passwordConfirm = formData.get('password_confirm');
+
+    if (password !== passwordConfirm) {
+      showMessage('A jelszó és a megerősítés nem egyezik.', true);
+      return;
+    }
+
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      password: password
+    };
+
+    try {
+      const response = await fetch('/Smartbookers/api/auth/register.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        showMessage(result.message);
+        registerForm.reset();
+        setTimeout(() => {
+          setTab('login');
+          showMessage('Most már be tudsz jelentkezni!');
+        }, 1500);
+      } else {
+        showMessage(result.message, true);
+      }
+    } catch (error) {
+      showMessage('Hálózati hiba történt.', true);
+    }
+  });
+
+  tabLogin.addEventListener('click', () => setTab('login'));
+  tabRegister.addEventListener('click', () => setTab('register'));
+
+  // Display session messages if any
+  const sessionSuccess = <?= json_encode($sessionSuccess) ?>;
+  const sessionError = <?= json_encode($sessionError) ?>;
+
+  if (sessionSuccess) {
+    showMessage(sessionSuccess);
+  } else if (sessionError) {
+    showMessage(sessionError, true);
+  }
+
+  setTab('login');
 })();
 </script>
 

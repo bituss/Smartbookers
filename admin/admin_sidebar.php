@@ -10,6 +10,31 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
   exit;
 }
 
+// ===== INAKTÍV ADMIN FELHASZNÁLÓK KIZÁRÁSA =====
+try {
+  $pdo_admin = new PDO('mysql:host=localhost;dbname=idopont_foglalas;charset=utf8mb4', 'root', '');
+  
+  // Ellenőrizzük, hogy létezik-e a deactivated_at oszlop
+  $checkColumn = $pdo_admin->query("SHOW COLUMNS FROM users LIKE 'deactivated_at'")->fetch();
+  $hasDeactivated = !empty($checkColumn);
+  
+  if ($hasDeactivated) {
+    $stmt_admin = $pdo_admin->prepare("SELECT deactivated_at FROM users WHERE id = ? AND role = 'admin' LIMIT 1");
+    $stmt_admin->execute([(int)$_SESSION['user_id']]);
+    $admin_check = $stmt_admin->fetch(PDO::FETCH_ASSOC);
+    
+    if ($admin_check && $admin_check['deactivated_at'] !== null) {
+      // Admin inaktív - kijelentkeztetés
+      session_destroy();
+      $_SESSION = [];
+      header("Location: /Smartbookers/admin/adminlogin.php?reason=inactive");
+      exit;
+    }
+  }
+} catch (Exception $e) {
+  // Hiba a DB kapcsolódásnál - ne szakítsa meg az oldalt
+}
+
 // aktuális fájlnév az active link jelöléséhez
 $_adminPage = basename($_SERVER['PHP_SELF']);
 ?>

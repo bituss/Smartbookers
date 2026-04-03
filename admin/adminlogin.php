@@ -8,6 +8,11 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
 }
 
 $error = '';
+$reason = $_GET['reason'] ?? '';
+
+if ($reason === 'inactive') {
+  $error = 'A fiókod inaktív. Kérj segítséget az adminisztrátortól.';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $email    = trim($_POST['email'] ?? '');
@@ -23,12 +28,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
       );
 
-      $stmt = $pdo->prepare("
-        SELECT u.id, u.name, u.password, u.role AS role_name
-        FROM users u
-        WHERE u.email = :email AND u.role = 'admin'
-        LIMIT 1
-      ");
+      // Ellenőrzik, hogy az adatbázis sémában létezik-e a deactivated_at oszlop
+      $checkColumn = $pdo->query("SHOW COLUMNS FROM users LIKE 'deactivated_at'")->fetch();
+      $hasDeactivated = !empty($checkColumn);
+
+      // SQL lekérdezés konstruálása
+      $sql = "SELECT u.id, u.name, u.password, u.role AS role_name";
+      if ($hasDeactivated) {
+        $sql .= ", u.deactivated_at";
+      }
+      $sql .= " FROM users u WHERE u.email = :email AND u.role = 'admin'";
+      if ($hasDeactivated) {
+        $sql .= " AND u.deactivated_at IS NULL";
+      }
+      $sql .= " LIMIT 1";
+
+      $stmt = $pdo->prepare($sql);
       $stmt->execute([':email' => $email]);
       $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -39,10 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: /Smartbookers/admin/dashboard.php');
         exit;
       } else {
-        $error = 'Hibás email vagy jelszó.';
+        $error = 'Hibás email vagy jelszó, vagy a fiók inaktív.';
       }
     } catch (PDOException $e) {
-      $error = 'Adatbázis hiba.';
+      $error = 'Adatbázis hiba: ' . $e->getMessage();
     }
   }
 }

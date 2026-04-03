@@ -228,11 +228,30 @@ include '../includes/header.php';
 .prov-meta{min-width:240px;}
 .prov-meta h2{margin:0;font-size:20px;color:#0f172a;font-weight:900;}
 .prov-meta p{margin:4px 0 0;color:#475569;}
-.prov-msg{margin-top:10px;font-weight:900;}
-.prov-ok{color:#16a34a;}
-.prov-err{color:#ef4444;}
+.msg{
+  text-align: center;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
 
-.stack{display:flex;flex-direction:column;gap:14px;margin-top:14px;}
+.msg.success{
+  border: 1px solid #bbf7d0;
+  background: #eafff1;
+  color: #166534;
+}
+
+.msg.error{
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.stack{display:flex;flex-direction:column;gap:14px;margin-top:14px; }
 .box{background:#f5f5ff ;border:1px solid rgba(15,23,42,0.10);border-radius:16px;padding:14px;}
 .box h3{margin:0 0 10px;font-size:14px;font-weight:900;color:#0f172a;}
 
@@ -249,10 +268,125 @@ include '../includes/header.php';
 .addr span{display:block;color:#475569;margin-top:4px;font-size:13px;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 @media(max-width:700px){.grid2{grid-template-columns:1fr;}}
+
+#msgContainer {
+  margin-bottom: 14px;
+  min-height: 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15,23,42,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-box {
+  width: 90%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 26px 70px rgba(15,23,42,.25);
+  padding: 28px 24px;
+  text-align: center;
+}
+
+.modal-icon {
+  width: 56px;
+  height: 56px;
+  line-height: 56px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: white;
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0 auto 14px;
+}
+
+.modal-box h2 {
+  margin: 0 0 12px;
+  font-size: 28px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.modal-box p {
+  margin: 0 0 22px;
+  color: #334155;
+  font-size: 16px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+}
+
+.modal-buttons button {
+  min-width: 88px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#modalConfirmBtn {
+  background: #16a34a;
+  color: #fff;
+}
+
+.msg {
+  text-align: center;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.msg.success {
+  border: 1px solid #bbf7d0;
+  background: #eafff1;
+  color: #166534;
+}
+
+.msg.error {
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #b91c1c;
+}
 </style>
 
 <div class="prov-wrap">
   <h1 class="prov-title">Vállalkozói profil</h1>
+
+  <div id="msgContainer"></div>
+
+  <div id="modalOverlay" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-icon">!</div>
+      <h2 id="modalTitle">Figyelem</h2>
+      <p id="modalText">A művelet sikeres volt.</p>
+      <div class="modal-buttons">
+        <button id="modalConfirmBtn">OK</button>
+      </div>
+    </div>
+  </div>
 
   <div class="prov-card">
     <div class="prov-top">
@@ -260,9 +394,6 @@ include '../includes/header.php';
       <div class="prov-meta">
         <h2><?= htmlspecialchars(($provider['business_name'] ?: 'Vállalkozás'), ENT_QUOTES, 'UTF-8') ?></h2>
         <p>Iparág / szolgáltatás: <strong><?= htmlspecialchars($serviceName, ENT_QUOTES, 'UTF-8') ?></strong></p>
-
-        <?php if($success): ?><div class="prov-msg prov-ok"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-        <?php if($error): ?><div class="prov-msg prov-err"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
       </div>
     </div>
 
@@ -381,5 +512,37 @@ include '../includes/header.php';
     </div>
   </div>
 </div>
+
+<script>
+function showModal(title, text) {
+  const overlay = document.getElementById('modalOverlay');
+  const titleEl = document.getElementById('modalTitle');
+  const textEl = document.getElementById('modalText');
+  const confirmBtn = document.getElementById('modalConfirmBtn');
+
+  titleEl.textContent = title;
+  textEl.textContent = text;
+  overlay.style.display = 'flex';
+
+  confirmBtn.onclick = () => {
+    overlay.style.display = 'none';
+  };
+}
+
+function showMessage(message, isError = false) {
+  showModal(isError ? 'Hiba' : 'Siker', message);
+}
+
+// Ha van PHP success/error, mutasd meg a popup-ot az oldal betöltésekor
+document.addEventListener('DOMContentLoaded', () => {
+  <?php if ($success): ?>
+    showMessage('<?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?>', false);
+  <?php endif; ?>
+  
+  <?php if ($error): ?>
+    showMessage('<?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>', true);
+  <?php endif; ?>
+});
+</script>
 
 <?php include '../includes/footer.php'; ?>

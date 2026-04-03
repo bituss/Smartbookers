@@ -1,17 +1,29 @@
 <?php
+/**
+ * Logout Handler - Backward Compatible
+ * Irányít az API-ra, de böngészőből is működik
+ */
+
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+  session_start();
 }
 
-// 🔥 először állítsd be a siker üzenetet
-$_SESSION['logout_success'] = true;
+// Session törlése
+session_destroy();
+$_SESSION = [];
 
-// 🔥 csak a user adatokat töröljük (nem az egészet!)
-unset($_SESSION['user_id'], $_SESSION['role'], $_SESSION['avatar']);
+// Query paraméter ellenőrzése
+$reason = $_GET['reason'] ?? '';
 
-// ❗ NE destroy-old itt a session-t
+// Üzenet beállítása
+$logoutMsg = '';
+if ($reason === 'inactive') {
+  $logoutMsg = '?logout=inactive';
+} else {
+  $logoutMsg = '?logout=1';
+}
 
-// redirect
-header("Location: /Smartbookers/public/index.php?logout=1");
+// Redirect a kezdőoldalra
+header("Location: /Smartbookers/public/index.php" . $logoutMsg);
 exit;
 ?>

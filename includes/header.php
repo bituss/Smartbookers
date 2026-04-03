@@ -6,6 +6,35 @@ if (session_status() === PHP_SESSION_NONE) {
 $logged_in = isset($_SESSION['role'], $_SESSION['user_id']);
 $role = $logged_in ? (string)$_SESSION['role'] : '';
 
+// ===== INAKTÍV FELHASZNÁLÓK KIZÁRÁSA =====
+if ($logged_in) {
+  try {
+    $pdo_check = new PDO('mysql:host=localhost;dbname=idopont_foglalas;charset=utf8mb4', 'root', '');
+    
+    // Ellenőrizzük, hogy létezik-e a deactivated_at oszlop
+    $checkColumn = $pdo_check->query("SHOW COLUMNS FROM users LIKE 'deactivated_at'")->fetch();
+    $hasDeactivated = !empty($checkColumn);
+    
+    if ($hasDeactivated) {
+      $stmt_check = $pdo_check->prepare("SELECT deactivated_at FROM users WHERE id = ? LIMIT 1");
+      $stmt_check->execute([(int)$_SESSION['user_id']]);
+      $user_check = $stmt_check->fetch(PDO::FETCH_ASSOC);
+      
+      if ($user_check && $user_check['deactivated_at'] !== null) {
+        // Felhasználó inaktív - kijelentkeztetés
+        session_destroy();
+        $_SESSION = [];
+        $logged_in = false;
+        $role = '';
+        header("Location: /Smartbookers/public/logout.php?reason=inactive");
+        exit;
+      }
+    }
+  } catch (Exception $e) {
+    // Hiba a DB kapcsolódásnál - ne szakítsa meg az oldalt
+  }
+}
+
 // ===== PROFILKÉP (user/provider) =====
 $defaultAvatar = "/Smartbookers/public/images/avatars/a1.png";
 $avatarUrl = $defaultAvatar;
