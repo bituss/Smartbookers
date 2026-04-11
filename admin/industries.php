@@ -74,7 +74,39 @@ if ($editId > 0) {
   <div class="admin-alert <?= $type ?>"><?= htmlspecialchars($text) ?></div>
 <?php endif; ?>
 
+<div class="admin-form-wrap">
+  <h2><?= $editRow ? 'Iparág szerkesztése' : 'Új iparág hozzáadása' ?></h2>
+  <form method="post" class="admin-form">
+    <?php if ($editRow): ?>
+      <input type="hidden" name="edit_industry" value="1">
+      <input type="hidden" name="edit_id" value="<?= $editRow['id'] ?>">
+    <?php else: ?>
+      <input type="hidden" name="add_industry" value="1">
+    <?php endif; ?>
 
+    <label>
+      Név
+      <input type="text" name="<?= $editRow ? 'edit_name' : 'ind_name' ?>" value="<?= htmlspecialchars($editRow['name'] ?? '') ?>" required>
+    </label>
+
+    <label>
+      Slug
+      <input type="text" name="<?= $editRow ? 'edit_slug' : 'ind_slug' ?>" value="<?= htmlspecialchars($editRow['slug'] ?? '') ?>" required>
+    </label>
+
+    <label>
+      Leírás
+      <textarea name="<?= $editRow ? 'edit_desc' : 'ind_desc' ?>" rows="3"><?= htmlspecialchars($editRow['description'] ?? '') ?></textarea>
+    </label>
+
+    <div class="admin-form-actions">
+      <button type="submit" class="btn-admin success"><?= $editRow ? 'Mentés' : 'Hozzáadás' ?></button>
+      <?php if ($editRow): ?>
+        <a href="/Smartbookers/admin/industries.php" class="btn-admin ghost">Mégse</a>
+      <?php endif; ?>
+    </div>
+  </form>
+</div>
 
 <div class="admin-table-wrap">
   <table class="admin-table">
