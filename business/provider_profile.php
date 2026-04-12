@@ -320,9 +320,9 @@ include '../includes/header.php';
         <p>Iparág / szolgáltatás: <strong><?= htmlspecialchars($serviceName, ENT_QUOTES, 'UTF-8') ?></strong></p>
       </div>
     </div>
-    <!-- EGYMÁS ALATT -->
+    
     <div class="stack">
-      <!-- 1) Profilkép feltöltése -->
+      <!-- Profilkép feltöltése -->
       <div class="box">
         <h3>Profilkép feltöltése</h3>
         <form method="post" enctype="multipart/form-data">
@@ -334,7 +334,7 @@ include '../includes/header.php';
           </div>
         </form>
       </div>
-      <!-- 2) Profil adatok + cím + bemutatkozás -->
+      <!-- Profil adatok + cím + bemutatkozás -->
       <div class="box">
         <h2>Profil adatok</h2>
         <div class="addr">

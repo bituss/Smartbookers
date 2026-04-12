@@ -118,7 +118,7 @@
       <div class="extra-card extra-card--map">
         <h3>Hol érhetsz el minket?</h3>
         <p>Online támogatás elsődlegesen, személyes egyeztetéssel.</p>
-        <!-- Opcionális: térkép beágyazás (ha akarod) -->
+        <!-- térkép beágyazás-->
         <div class="map-shell" aria-label="Térkép: Balassagyarmati Szent-Györgyi Albert Technikum">
   <iframe
     class="gmap"

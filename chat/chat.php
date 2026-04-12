@@ -132,7 +132,7 @@ $lastId = 0;
         </div>
       <?php endwhile; ?>
     </div>
-    <!-- NINCS már szerver oldali POST küldés, csak JS -->
+    
     <form class="form" id="chatForm" autocomplete="off">
       <textarea id="body" rows="2" placeholder="Írj üzenetet..."></textarea>
       <button type="submit">Küldés</button>

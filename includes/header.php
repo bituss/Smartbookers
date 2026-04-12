@@ -208,7 +208,7 @@ $showIndustries = (!$logged_in) || ($role !== 'provider');
   </div>
   <!-- NAV MOBILE -->
   <nav class="nav-mobile">
-    <!-- ✅ IPARÁGAK: vendég + user + admin (provider nem) -->
+    <!-- Iparágak: vendég + user + admin (provider nem) -->
     <?php if($showIndustries): ?>
      <details class="mobile-dd">
   <summary class="btn small">Iparágak</summary>

@@ -34,12 +34,12 @@ $_adminPage = basename($_SERVER['PHP_SELF']);
 </head>
 <body>
 <div class="admin-wrap">
-  <!-- Mobil topbar -->
+  
   <div class="admin-topbar">
     <button type="button" class="admin-burger" id="adminBurger" aria-label="Menü">☰</button>
     <span class="admin-topbar-title">SmartBookers</span>
   </div>
-  <!-- Overlay -->
+  
   <div class="admin-overlay" id="adminOverlay"></div>
   <aside class="admin-sidebar" id="adminSidebar">
     <div class="brand">SmartBookers</div>

@@ -8,7 +8,7 @@
         Kevesebb adminisztráció, több vendég.
       </p>
     </div>
-    <!-- Links -->
+    <!-- Linkek -->
     <div class="footer-links">
       <h4>Oldalak</h4>
       <ul>
@@ -17,7 +17,7 @@
         <li><a href="/Smartbookers/public/contact.php">Kapcsolat</a></li>
       </ul>
     </div>
-    <!-- Industries -->
+    <!-- Iparágak -->
     <div class="footer-links">
       <h4>Iparágak</h4>
       <ul>
@@ -27,7 +27,7 @@
         <li> <a href="/Smartbookers/public/industry.php?slug=masszazs">Masszázs</a></li>
       </ul>
     </div>
-    <!-- Legal -->
+    
     <div class="footer-links">
   <h4>Jogi</h4>
   <ul>
@@ -37,7 +37,7 @@
   </ul>
 </div>
   </div>
-  <!-- Bottom -->
+  
   <div class="footer-bottom">
     <p>© <?php echo date('Y'); ?> SmartBookers – Minden jog fenntartva.</p>
   </div>

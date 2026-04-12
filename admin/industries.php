@@ -118,19 +118,18 @@ if ($editId > 0) {
           <?php endif; ?>
         </td>
         <td style="display:flex;gap:6px;flex-wrap:wrap;">
-          <!-- Aktiválás / Deaktiválás -->
+          
           <form method="post" style="display:inline;">
             <input type="hidden" name="toggle_id" value="<?= $i['id'] ?>">
             <button class="btn-admin <?= $i['is_active'] ? 'ghost' : 'success' ?>" type="submit">
               <?= $i['is_active'] ? 'Deaktiválás' : 'Aktiválás' ?>
             </button>
           </form>
-          <!-- Szerkesztés -->
+          
           <a href="?edit=<?= $i['id'] ?>" class="btn-admin ghost">Szerkesztés</a>
-          <!-- Törlés -->
+          
           <form method="post" style="display:inline;" onsubmit="return confirm('Biztosan törlöd?');">
             <input type="hidden" name="delete_id" value="<?= $i['id'] ?>">
-            <button class="btn-admin danger" type="submit">Törlés</button>
           </form>
         </td>
       </tr>

@@ -1371,13 +1371,13 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
   border-radius: 14px;
   line-height: 1.25;
 
-  /* EZ A LÉNYEG: tördelés */
+  
   white-space: pre-wrap;      /* \n is marad, tördel */
   overflow-wrap: anywhere;    /* hosszú szó is törik */
   word-break: break-word;     /* régi böngészők */
 }
 
-/* Ha bárhol <pre> vagy hasonló kerülne be, az se csússzon */
+
 .chat-messages pre,
 .chat-messages code {
   white-space: pre-wrap;
@@ -1385,14 +1385,14 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
   word-break: break-word;
 }
 
-/* Idő legyen szépen alatta */
+
 .msgTime {
   font-size: 11px;
   opacity: .75;
   margin-top: 4px;
 }
 
-/* Színek maradhatnak */
+
 .msgRow.me .bubble { background:#24256e; color:#fff; }
 .msgRow.other .bubble { background:#e5e7eb; color:#0f172a; }
 
@@ -1409,11 +1409,11 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
 /* --- CHAT DROPDOWN --- */
 .chat-dd { position: relative; display:inline-block; }
 
-/* ✅ FIX: legyen fix + nagyon magas z-index, hogy SEMMI ne takarja */
+
 .chat-menu{
   position: fixed;
   right: 16px;
-  top: 78px;              /* ha kell, állítsd 70–90 között */
+  top: 78px;              
   width: 520px;
   max-width: calc(100vw - 32px);
 
@@ -1633,7 +1633,7 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
   flex:0 0 auto;
   border:2px solid rgba(15,23,42,0.08);
 }
-/* ====== FIX: desktopon sose látszódjon a mobil menü ====== */
+
 @media (min-width: 901px){
   .menu-toggle{ display:none !important; }
   .nav-mobile{ display:none !important; }
@@ -1685,7 +1685,7 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
   }
 }
 
-/* extra: ha valami miatt menu-open rajta marad desktopon, akkor is tiltjuk */
+
 @media (min-width: 901px) {
   body.menu-open .app-header .nav-mobile {
     display: none !important;
@@ -1698,7 +1698,7 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
    INDUSTRIES DROPDOWN + SUBMENU (DESKTOP)
 ====================================================== */
 
-/* a te dropdownod már jó, csak finomítjuk */
+
 .industries-dd .dropdown-menu{
   padding: 8px 0;
 }
@@ -1783,14 +1783,14 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
 ====================================================== */
 @media (max-width:938px){
 
-  /* iparág (summary) marad hangsúlyos, de legyen kis térköz */
+  
   .mobile-sub{
     margin-top: 10px;
     padding-top: 6px;
     border-top: 1px solid rgba(15,23,42,0.08);
   }
 
-  /* alszolgáltatás linkek: világos háttér + behúzás */
+  
   .mobile-sub a.btn.small{
     margin-top: 10px;
     background: rgba(36,37,110,0.08) !important;  /* halvány lila */
@@ -1809,7 +1809,7 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
   padding: 20px;
 }
 
-/* MINDEN gomb ugyanúgy nézzen ki */
+
 .nav-mobile .btn,
 .nav-mobile a.btn{
   width: 100%;
@@ -1858,7 +1858,7 @@ body.nav-compact.menu-open .nav-mobile{ display:flex; }
     border-top: 1px solid rgba(15,23,42,0.10);
   }
 
-  /* alszolgáltatás linkek: halvány lila kártya + behúzás */
+  
   .mobile-sub a.btn.small{
     margin-top: 10px;
     background: rgba(36,37,110,0.10) !important;
