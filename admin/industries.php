@@ -2,10 +2,7 @@
 <?php
 $pdo = new PDO('mysql:host=localhost;dbname=idopont_foglalas;charset=utf8mb4','root','',
   [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-
 $msg = '';
-
-// --- Új iparág hozzáadása ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_industry'])) {
   $name = trim($_POST['ind_name'] ?? '');
   $slug = trim($_POST['ind_slug'] ?? '');
@@ -25,8 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_industry'])) {
     }
   }
 }
-
-// --- Szerkesztés ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_industry'])) {
   $id   = (int)$_POST['edit_id'];
   $name = trim($_POST['edit_name'] ?? '');
@@ -41,22 +36,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_industry'])) {
     $msg = 'success:Iparág frissítve.';
   }
 }
-
-// --- Aktiválás / deaktiválás ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_id'])) {
   $id = (int)$_POST['toggle_id'];
   $pdo->prepare("UPDATE industries SET is_active = NOT is_active WHERE id = ?")->execute([$id]);
   $msg = 'success:Státusz módosítva.';
 }
-
-// --- Törlés ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
   $id = (int)$_POST['delete_id'];
   $pdo->prepare("DELETE FROM industries WHERE id = ?")->execute([$id]);
   $msg = 'success:Iparág törölve.';
 }
-
-// --- Adatok ---
 $industries = $pdo->query("SELECT * FROM industries ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 $editId = isset($_GET['edit']) ? (int)$_GET['edit'] : 0;
 $editRow = null;
@@ -66,14 +55,11 @@ if ($editId > 0) {
   $editRow = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 ?>
-
 <h1>Iparágak</h1>
-
 <?php if ($msg): ?>
   <?php [$type,$text] = explode(':', $msg, 2); ?>
   <div class="admin-alert <?= $type ?>"><?= htmlspecialchars($text) ?></div>
 <?php endif; ?>
-
 <div class="admin-form-wrap">
   <h2><?= $editRow ? 'Iparág szerkesztése' : 'Új iparág hozzáadása' ?></h2>
   <form method="post" class="admin-form">
@@ -83,22 +69,18 @@ if ($editId > 0) {
     <?php else: ?>
       <input type="hidden" name="add_industry" value="1">
     <?php endif; ?>
-
     <label>
       Név
       <input type="text" name="<?= $editRow ? 'edit_name' : 'ind_name' ?>" value="<?= htmlspecialchars($editRow['name'] ?? '') ?>" required>
     </label>
-
     <label>
       Slug
       <input type="text" name="<?= $editRow ? 'edit_slug' : 'ind_slug' ?>" value="<?= htmlspecialchars($editRow['slug'] ?? '') ?>" required>
     </label>
-
     <label>
       Leírás
       <textarea name="<?= $editRow ? 'edit_desc' : 'ind_desc' ?>" rows="3"><?= htmlspecialchars($editRow['description'] ?? '') ?></textarea>
     </label>
-
     <div class="admin-form-actions">
       <button type="submit" class="btn-admin success"><?= $editRow ? 'Mentés' : 'Hozzáadás' ?></button>
       <?php if ($editRow): ?>
@@ -107,7 +89,6 @@ if ($editId > 0) {
     </div>
   </form>
 </div>
-
 <div class="admin-table-wrap">
   <table class="admin-table">
     <thead>
@@ -157,5 +138,4 @@ if ($editId > 0) {
     </tbody>
   </table>
 </div>
-
 <?php include __DIR__ . '/admin_footer.php'; ?>

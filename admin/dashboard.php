@@ -2,14 +2,12 @@
 <?php
 $pdo = new PDO('mysql:host=localhost;dbname=idopont_foglalas;charset=utf8mb4','root','',
   [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-
 $userCount     = $pdo->query("SELECT COUNT(*) FROM users WHERE role='user'")->fetchColumn();
 $providerCount = $pdo->query("SELECT COUNT(*) FROM providers")->fetchColumn();
 $activeBook    = $pdo->query("SELECT COUNT(*) FROM bookings WHERE cancelled_at IS NULL")->fetchColumn();
 $cancelledBook = $pdo->query("SELECT COUNT(*) FROM bookings WHERE cancelled_at IS NOT NULL")->fetchColumn();
 $serviceCount  = $pdo->query("SELECT COUNT(*) FROM services")->fetchColumn();
 $industryCount = $pdo->query("SELECT COUNT(*) FROM industries")->fetchColumn();
-
 $recent = $pdo->query("
   SELECT b.id, u.name AS user_name, p.business_name, b.booking_time, b.cancelled_at,
          ss.name AS sub_service
@@ -21,9 +19,7 @@ $recent = $pdo->query("
   LIMIT 5
 ")->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <h1>Dashboard</h1>
-
 <div class="stat-grid">
   <div class="stat-card">
     <div class="label">Felhasználók</div>
@@ -50,9 +46,7 @@ $recent = $pdo->query("
     <div class="value"><?= $industryCount ?></div>
   </div>
 </div>
-
 <h2 style="font-size:18px;font-weight:800;margin:0 0 14px;">Legutóbbi foglalások</h2>
-
 <div class="admin-table-wrap">
   <table class="admin-table">
     <thead>
@@ -87,5 +81,4 @@ $recent = $pdo->query("
     </tbody>
   </table>
 </div>
-
 <?php include __DIR__ . '/admin_footer.php'; ?>

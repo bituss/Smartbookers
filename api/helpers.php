@@ -1,51 +1,30 @@
 <?php
-/**
- * API Response Helper - Standardizált válaszok
- * 
- * Használat:
- * sendJson(true, 'Siker üzenet', ['user' => [...]], 200);
- * sendJson(false, 'Hiba üzenet', null, 400);
- */
-
 function sendJson(bool $success, string $message, array $data = null, int $statusCode = 200): void
 {
   http_response_code($statusCode);
-  
   $response = [
     "success" => $success,
     "message" => $message
   ];
-  
   if ($data !== null) {
     $response = array_merge($response, $data);
   }
-  
   header('Content-Type: application/json; charset=utf-8');
   echo json_encode($response);
   exit;
 }
-
-/**
- * Content-Type validáció
- */
 function validateJsonContent(): void
 {
   $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-  
   if ($_SERVER['REQUEST_METHOD'] !== 'GET' && 
       $_SERVER['REQUEST_METHOD'] !== 'DELETE' &&
       strpos($contentType, 'application/json') === false) {
     sendJson(false, 'Content-Type: application/json szükséges', null, 400);
   }
 }
-
-/**
- * HTTP Metódus validáció
- */
 function validateMethod(array $allowedMethods): void
 {
   $method = $_SERVER['REQUEST_METHOD'];
-  
   if (!in_array($method, $allowedMethods)) {
     sendJson(
       false,
@@ -55,27 +34,18 @@ function validateMethod(array $allowedMethods): void
     );
   }
 }
-
-/**
- * Auth validáció (bejelentkezés)
- */
 function validateAuth(): void
 {
   if (!isset($_SESSION['user_id'])) {
     sendJson(false, 'Nincs bejelentkezés.', null, 401);
   }
 }
-
-/**
- * Admin validáció
- */
 function validateAdmin(): void
 {
   if (($_SESSION['role'] ?? '') !== 'admin') {
     sendJson(false, 'Admin jogosultság szükséges.', null, 403);
   }
 }
-
 function columnExists(PDO $pdo, string $table, string $column): bool
 {
   try {

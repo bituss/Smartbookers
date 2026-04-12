@@ -1,29 +1,11 @@
 <?php
-/**
- * REST API: User Management
- * 
- * GET    /api/users/{id}        - Get user profile
- * PUT    /api/users/{id}        - Update user profile
- * PATCH  /api/users/{id}        - Partial update
- * DELETE /api/users/{id}        - Soft delete user
- * 
- * Usage:
- * GET    /api/users/me            - Get current user
- * PUT    /api/users/1             - Update user 1
- * DELETE /api/users/1             - Soft delete user 1
- */
-
 declare(strict_types=1);
 session_start();
-
 header('Content-Type: application/json; charset=utf-8');
-
-// Adatbázis kapcsolat
 $host = "localhost";
 $db   = "idopont_foglalas";
 $user = "root";
 $pass = "";
-
 try {
   $pdo = new PDO(
     "mysql:host=$host;dbname=$db;charset=utf8mb4",
@@ -39,10 +21,7 @@ try {
   ]);
   exit;
 }
-
 $hasDeactivated = columnExists($pdo, 'users', 'deactivated_at');
-
-// Bejelentkezés ellenőrzése
 if (!isset($_SESSION['user_id'])) {
   http_response_code(401);
   echo json_encode([
@@ -51,12 +30,10 @@ if (!isset($_SESSION['user_id'])) {
   ]);
   exit;
 }
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pathInfo = trim($_SERVER['PATH_INFO'] ?? '', '/');
 $parts = explode('/', $pathInfo);
 $userId = null;
-
 if (!empty($parts[0]) && $parts[0] !== '') {
   if ($parts[0] === 'me') {
     $userId = (int)$_SESSION['user_id'];
@@ -64,8 +41,6 @@ if (!empty($parts[0]) && $parts[0] !== '') {
     $userId = (int)$parts[0];
   }
 }
-
-// GET: Felhasználó profil
 if ($method === 'GET') {
   if ($userId === null) {
     http_response_code(400);
@@ -75,8 +50,6 @@ if ($method === 'GET') {
     ]);
     exit;
   }
-  
-  // Saját profil vagy admin
   if ($userId !== (int)$_SESSION['user_id'] && ($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(403);
     echo json_encode([
@@ -85,16 +58,13 @@ if ($method === 'GET') {
     ]);
     exit;
   }
-  
   $selectFields = 'u.id, u.name, u.email, u.role, u.avatar, u.created_at';
   if ($hasDeactivated) {
     $selectFields .= ', u.deactivated_at';
   }
-
   $stmt = $pdo->prepare("SELECT $selectFields FROM users u WHERE u.id = ?");
   $stmt->execute([$userId]);
   $userData = $stmt->fetch(PDO::FETCH_ASSOC);
-  
   if (!$userData) {
     http_response_code(404);
     echo json_encode([
@@ -103,7 +73,6 @@ if ($method === 'GET') {
     ]);
     exit;
   }
-  
   $responseUser = [
     "id"         => (int)$userData['id'],
     "name"       => (string)$userData['name'],
@@ -112,22 +81,18 @@ if ($method === 'GET') {
     "avatar"     => $userData['avatar'] ?? null,
     "created_at" => (string)$userData['created_at']
   ];
-
   if ($hasDeactivated) {
     $responseUser['deactivated_at'] = $userData['deactivated_at'] ?? null;
     $responseUser['is_active'] = $userData['deactivated_at'] === null;
   } else {
     $responseUser['is_active'] = true;
   }
-
   http_response_code(200);
   echo json_encode([
     "success" => true,
     "user" => $responseUser
   ]);
 }
-
-// PUT / PATCH: Felhasználó szerkesztése
 elseif ($method === 'PUT' || $method === 'PATCH') {
   if ($userId === null) {
     http_response_code(400);
@@ -137,8 +102,6 @@ elseif ($method === 'PUT' || $method === 'PATCH') {
     ]);
     exit;
   }
-  
-  // Saját profil vagy admin
   if ($userId !== (int)$_SESSION['user_id'] && ($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(403);
     echo json_encode([
@@ -147,18 +110,13 @@ elseif ($method === 'PUT' || $method === 'PATCH') {
     ]);
     exit;
   }
-  
-  // Request body feldolgozása
-  $input = json_decode(file_get_contents("php://input"), true);
+  $input = json_decode(file_get_contents("php:
   if (!is_array($input)) {
     $input = $_POST;
   }
-  
-  // Felhasználó letöltése
   $stmt = $pdo->prepare("SELECT u.* FROM users u WHERE u.id = ?");
   $stmt->execute([$userId]);
   $userData = $stmt->fetch(PDO::FETCH_ASSOC);
-  
   if (!$userData) {
     http_response_code(404);
     echo json_encode([
@@ -167,25 +125,18 @@ elseif ($method === 'PUT' || $method === 'PATCH') {
     ]);
     exit;
   }
-  
-  // Adatok frissítése
   $name      = trim((string)($input['name'] ?? $userData['name']));
   $avatar    = trim((string)($input['avatar'] ?? $userData['avatar']));
   $password  = (string)($input['password'] ?? '');
-  
   $errors = [];
-  
   if ($name === '') {
     $errors[] = "Név mező kötelező.";
   }
-  
-  // Jelszó változtatás - validáció
   if ($password !== '') {
     if (mb_strlen($password) < 6) {
       $errors[] = "A jelszó legyen legalább 6 karakter.";
     }
   }
-  
   if (!empty($errors)) {
     http_response_code(422);
     echo json_encode([
@@ -194,10 +145,8 @@ elseif ($method === 'PUT' || $method === 'PATCH') {
     ]);
     exit;
   }
-  
   try {
     $pdo->beginTransaction();
-    
     if ($password !== '') {
       $hash = password_hash($password, PASSWORD_DEFAULT);
       $updateStmt = $pdo->prepare("
@@ -214,19 +163,14 @@ elseif ($method === 'PUT' || $method === 'PATCH') {
       ");
       $updateStmt->execute([$name, $avatar ?: null, $userId]);
     }
-    
     $pdo->commit();
-    
-    // Frissített adat
     $selectFields = 'u.id, u.name, u.email, u.role, u.avatar, u.created_at';
     if ($hasDeactivated) {
       $selectFields .= ', u.deactivated_at';
     }
-
     $stmt = $pdo->prepare("SELECT $selectFields FROM users u WHERE u.id = ?");
     $stmt->execute([$userId]);
     $updatedUser = $stmt->fetch(PDO::FETCH_ASSOC);
-    
     $responseUser = [
       "id" => (int)$updatedUser['id'],
       "name" => (string)$updatedUser['name'],
@@ -235,24 +179,20 @@ elseif ($method === 'PUT' || $method === 'PATCH') {
       "avatar" => $updatedUser['avatar'] ?? null,
       "created_at" => (string)$updatedUser['created_at']
     ];
-
     if ($hasDeactivated) {
       $responseUser['deactivated_at'] = $updatedUser['deactivated_at'] ?? null;
       $responseUser['is_active'] = $updatedUser['deactivated_at'] === null;
     } else {
       $responseUser['is_active'] = true;
     }
-
     http_response_code(200);
     echo json_encode([
       "success" => true,
       "message" => "Felhasználó sikeresen frissítve.",
       "user" => $responseUser
     ]);
-    
   } catch (Throwable $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
-    
     http_response_code(500);
     echo json_encode([
       "success" => false,
@@ -260,8 +200,6 @@ elseif ($method === 'PUT' || $method === 'PATCH') {
     ]);
   }
 }
-
-// DELETE: Felhasználó soft delete
 elseif ($method === 'DELETE') {
   if ($userId === null) {
     http_response_code(400);
@@ -271,8 +209,6 @@ elseif ($method === 'DELETE') {
     ]);
     exit;
   }
-  
-  // Saját profil vagy admin
   if ($userId !== (int)$_SESSION['user_id'] && ($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(403);
     echo json_encode([
@@ -281,7 +217,6 @@ elseif ($method === 'DELETE') {
     ]);
     exit;
   }
-  
   if (!$hasDeactivated) {
     http_response_code(500);
     echo json_encode([
@@ -290,12 +225,9 @@ elseif ($method === 'DELETE') {
     ]);
     exit;
   }
-
-  // Felhasználó letöltése
   $stmt = $pdo->prepare("SELECT u.id, u.deactivated_at FROM users u WHERE u.id = ?");
   $stmt->execute([$userId]);
   $userData = $stmt->fetch(PDO::FETCH_ASSOC);
-  
   if (!$userData) {
     http_response_code(404);
     echo json_encode([
@@ -304,8 +236,6 @@ elseif ($method === 'DELETE') {
     ]);
     exit;
   }
-  
-  // Már inaktív?
   if ($userData['deactivated_at'] !== null) {
     http_response_code(422);
     echo json_encode([
@@ -314,17 +244,14 @@ elseif ($method === 'DELETE') {
     ]);
     exit;
   }
-  
   try {
     $deactivatedAt = date('Y-m-d H:i:s');
-    
     $updateStmt = $pdo->prepare("
       UPDATE users 
       SET deactivated_at = ?
       WHERE id = ?
     ");
     $updateStmt->execute([$deactivatedAt, $userId]);
-    
     http_response_code(200);
     echo json_encode([
       "success" => true,
@@ -335,7 +262,6 @@ elseif ($method === 'DELETE') {
         "is_active"      => false
       ]
     ]);
-    
   } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode([
@@ -344,8 +270,6 @@ elseif ($method === 'DELETE') {
     ]);
   }
 }
-
-// Nem támogatott metódus
 else {
   http_response_code(405);
   echo json_encode([

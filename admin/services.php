@@ -2,18 +2,13 @@
 <?php
 $pdo = new PDO('mysql:host=localhost;dbname=idopont_foglalas;charset=utf8mb4','root','',
   [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-
 $msg = '';
-
-// --- Szolgáltatás törlése ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_service_id'])) {
   $id = (int)$_POST['delete_service_id'];
   $pdo->prepare("DELETE FROM sub_services WHERE service_id = ?")->execute([$id]);
   $pdo->prepare("DELETE FROM services WHERE id = ?")->execute([$id]);
   $msg = 'success:Szolgáltatás és alszolgáltatásai törölve.';
 }
-
-// --- Új alszolgáltatás hozzáadása ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_sub'])) {
   $serviceId = (int)($_POST['sub_service_id'] ?? 0);
   $subName   = trim($_POST['sub_name'] ?? '');
@@ -25,17 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_sub'])) {
     $msg = 'success:Alszolgáltatás hozzáadva.';
   }
 }
-
-// --- Alszolgáltatás törlése ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_sub_id'])) {
   $id = (int)$_POST['delete_sub_id'];
   $pdo->prepare("DELETE FROM sub_services WHERE id = ?")->execute([$id]);
   $msg = 'success:Alszolgáltatás törölve.';
 }
-
-// --- Adatok lekérdezése ---
 $services = $pdo->query("SELECT id, name FROM services ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
-
 $subServices = $pdo->query("
   SELECT ss.id, ss.name, ss.service_id, s.name AS service_name
   FROM sub_services ss
@@ -43,17 +33,11 @@ $subServices = $pdo->query("
   ORDER BY s.name, ss.name
 ")->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <h1>Szolgáltatások</h1>
-
 <?php if ($msg): ?>
   <?php [$type,$text] = explode(':', $msg, 2); ?>
   <div class="admin-alert <?= $type ?>"><?= htmlspecialchars($text) ?></div>
 <?php endif; ?>
-
-
-
-
 <div class="admin-table-wrap">
   <table class="admin-table">
     <thead>
@@ -83,5 +67,4 @@ $subServices = $pdo->query("
     </tbody>
   </table>
 </div>
-
 <?php include __DIR__ . '/admin_footer.php'; ?>
