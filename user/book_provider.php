@@ -1,9 +1,6 @@
 <?php
 session_start();
-
 $providerId = (int)($_GET['provider_id'] ?? 0);
-
-// Ha nincs provider_id, töröljük a session-t és hibát mutatunk
 if ($providerId <= 0) {
     $_SESSION['book_provider'] = null;
     include '../includes/header.php';
@@ -16,22 +13,15 @@ if ($providerId <= 0) {
     include '../includes/footer.php';
     exit;
 }
-
-// Bejelentkezés ellenőrzés — ha nincs belépve, mentsük el a provider_id-t és irányítsuk át
 if (!isset($_SESSION['user_id']) || (int)$_SESSION['user_id'] <= 0) {
     $_SESSION['book_provider'] = $providerId;
     header('Location: /Smartbookers/public/login.php');
     exit;
 }
-
-// Ide már csak bejelentkezett user kerül — töröljük a session értéket
 $_SESSION['book_provider'] = null;
-
 $mysqli = new mysqli('localhost', 'root', '', 'idopont_foglalas');
 if ($mysqli->connect_error) die('Kapcsolódási hiba: ' . $mysqli->connect_error);
 $mysqli->set_charset('utf8mb4');
-
-// Provider adatok
 $st = $mysqli->prepare('
     SELECT p.business_name, p.bio, p.avatar
     FROM providers p
@@ -41,7 +31,6 @@ $st = $mysqli->prepare('
 $st->bind_param('i', $providerId);
 $st->execute();
 $provider = $st->get_result()->fetch_assoc();
-
 if (!$provider) {
     include '../includes/header.php';
     ?>
@@ -53,8 +42,6 @@ if (!$provider) {
     include '../includes/footer.php';
     exit;
 }
-
-// Szabad jövőbeli időpontok lekérése
 $st2 = $mysqli->prepare('
     SELECT
         pa.id,
@@ -79,20 +66,15 @@ $st2 = $mysqli->prepare('
 $st2->bind_param('i', $providerId);
 $st2->execute();
 $result = $st2->get_result();
-
-// Dátum szerint csoportosítás
 $grouped = [];
 while ($row = $result->fetch_assoc()) {
     $grouped[$row['slot_date']][] = $row;
 }
-
 $businessName = htmlspecialchars($provider['business_name'] ?? 'Ismeretlen szolgáltató', ENT_QUOTES, 'UTF-8');
 $defaultAvatar = '/Smartbookers/public/images/avatars/a1.png';
 $avatarUrl = !empty($provider['avatar']) ? htmlspecialchars($provider['avatar'], ENT_QUOTES, 'UTF-8') : $defaultAvatar;
-
 include '../includes/header.php';
 ?>
-
 <style>
 .bp-wrap        { max-width: 680px; margin: 32px auto; padding: 0 16px 48px; }
 .bp-header      { display:flex; align-items:center; gap:16px; margin-bottom:28px; }
@@ -114,10 +96,8 @@ include '../includes/header.php';
 .bp-slot a:hover{ background:#4f46e5; }
 .bp-empty       { color:#94a3b8; font-size:15px; padding:24px 0; }
 </style>
-
 <main>
 <div class="bp-wrap">
-
   <div class="bp-header">
     <img class="bp-avatar" src="<?= $avatarUrl ?>" alt="<?= $businessName ?>">
     <div>
@@ -125,7 +105,6 @@ include '../includes/header.php';
       <div class="bp-subtitle">Szabad időpontok</div>
     </div>
   </div>
-
   <?php if (empty($grouped)): ?>
     <p class="bp-empty">Jelenleg nincs elérhető szabad időpont ennél a szolgáltatónál.</p>
   <?php else: ?>
@@ -159,8 +138,6 @@ include '../includes/header.php';
       </div>
     <?php endforeach; ?>
   <?php endif; ?>
-
 </div>
 </main>
-
 <?php include '../includes/footer.php'; ?>

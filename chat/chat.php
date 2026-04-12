@@ -1,39 +1,29 @@
 <?php
 declare(strict_types=1);
-
 session_start();
 include '../includes/header.php';
-
 if (!isset($_SESSION['user_id'], $_SESSION['role'])) {
   header("Location: /Smartbookers/public/login.php");
   exit;
 }
-
 $mysqli = new mysqli("localhost", "root", "", "idopont_foglalas");
 if ($mysqli->connect_error) {
   die("Kapcsolódási hiba: " . $mysqli->connect_error);
 }
 $mysqli->set_charset("utf8mb4");
-
 $userId = (int)$_SESSION['user_id'];
-$role = (string)$_SESSION['role']; // 'user' vagy 'provider'
-
+$role = (string)$_SESSION['role']; 
 if ($role !== 'user' && $role !== 'provider') {
   echo "<div style='padding:20px;'>Hibás szerepkör.</div>";
   include '../includes/footer.php';
   exit;
 }
-
 $conversationId = (int)($_GET['conversation_id'] ?? 0);
 if ($conversationId <= 0) {
   echo "<div style='padding:20px;'>Nincs kiválasztott beszélgetés.</div>";
   include '../includes/footer.php';
   exit;
 }
-
-/**
- * ProviderId (ha provider)
- */
 $providerId = 0;
 if ($role === 'provider') {
   $providerId = (int)($_SESSION['provider_id'] ?? 0);
@@ -51,12 +41,7 @@ if ($role === 'provider') {
     exit;
   }
 }
-
-/**
- * Jogosultság ellenőrzés + cím (kivel beszélek)
- */
 $title = "Chat";
-
 if ($role === 'user') {
   $stmt = $mysqli->prepare("
     SELECT c.id, p.business_name AS title
@@ -76,21 +61,14 @@ if ($role === 'user') {
   ");
   $stmt->bind_param("ii", $conversationId, $providerId);
 }
-
 $stmt->execute();
 $conv = $stmt->get_result()->fetch_assoc();
-
 if (!$conv) {
   echo "<div style='padding:20px;'>Nincs jogosultság ehhez a beszélgetéshez.</div>";
   include '../includes/footer.php';
   exit;
 }
-
 $title = (string)$conv['title'];
-
-/**
- * Olvasottra jelölés (csak a másik fél üzeneteit)
- */
 if ($role === 'user') {
   $stmt = $mysqli->prepare("
     UPDATE messages
@@ -106,10 +84,6 @@ if ($role === 'user') {
 }
 $stmt->bind_param("i", $conversationId);
 $stmt->execute();
-
-/**
- * Üzenetek (kezdeti betöltés)
- */
 $stmt = $mysqli->prepare("
   SELECT id, by_provider, body, created_at
   FROM messages
@@ -120,7 +94,6 @@ $stmt = $mysqli->prepare("
 $stmt->bind_param("i", $conversationId);
 $stmt->execute();
 $msgs = $stmt->get_result();
-
 $lastId = 0;
 ?>
 <!doctype html>
@@ -148,7 +121,6 @@ $lastId = 0;
 <div class="wrap">
   <div class="card">
     <div class="head">💬 <?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></div>
-
     <div class="msgs" id="msgs">
       <?php while($m = $msgs->fetch_assoc()):
         $lastId = max($lastId, (int)$m['id']);
@@ -160,7 +132,6 @@ $lastId = 0;
         </div>
       <?php endwhile; ?>
     </div>
-
     <!-- NINCS már szerver oldali POST küldés, csak JS -->
     <form class="form" id="chatForm" autocomplete="off">
       <textarea id="body" rows="2" placeholder="Írj üzenetet..."></textarea>
@@ -168,7 +139,6 @@ $lastId = 0;
     </form>
   </div>
 </div>
-
 <script>
   window.CHAT = {
     conversationId: <?= (int)$conversationId ?>,
@@ -177,7 +147,6 @@ $lastId = 0;
   };
 </script>
 <script src="/Smartbookers/js/chat.js"></script>
-
 <?php include '../includes/footer.php'; ?>
 </body>
 </html>

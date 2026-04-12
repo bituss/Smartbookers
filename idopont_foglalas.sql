@@ -236,19 +236,21 @@ CREATE TABLE `users` (
   `name` varchar(100) NOT NULL,
   `email` varchar(150) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role_id` int(11) NOT NULL,
+  `role` enum('user','provider','admin') NOT NULL DEFAULT 'user',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `avatar` varchar(255) DEFAULT NULL
+  `avatar` varchar(255) DEFAULT NULL,
+  `deactivated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 --
 -- A tábla adatainak kiíratása `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role_id`, `created_at`, `avatar`) VALUES
-(2, 'Gazsó Norbert', 'gazsonorbi@gmail.com', '$2y$10$WDl2zS2HxneQ7FbVVNfe.uvIZQ6xPCqBEWKMWpdRvDsulQSoWj46.', 1, '2026-02-02 17:55:51', '/Smartbookers/public/images/avatars/a10.png'),
-(3, 'Koplányi Bítia Anna', 'bituss@icloud.com', '$2y$10$xdEldv/83sxdZL0y9KqN4.Q95zvz4UuNTq0ILFTO3gINcP7tAQweu', 2, '2026-02-02 18:14:23', NULL),
-(4, 'Nagy Martina', 'nagymartina@gmail.com', '$2y$10$8jmw9LxEFS4q8XbI5oKhsegEcsi4bkJLqPbe0699tFMp2xW0BjP9y', 2, '2026-02-03 15:51:41', NULL);
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `created_at`, `avatar`, `deactivated_at`) VALUES
+(1, 'Admin', 'admin1@admin.hu', '$2y$10$X8CowXYUA.tqI5OHxuVTj.IvcPNlxBjz/EOPoNVHuJqJDfV/oI8Wq', 'admin', '2026-03-13 12:15:52', NULL, NULL),
+(2, 'Gazsó Norbert', 'gazsonorbi@gmail.com', '$2y$10$WDl2zS2HxneQ7FbVVNfe.uvIZQ6xPCqBEWKMWpdRvDsulQSoWj46.', 'user', '2026-02-02 17:55:51', '/Smartbookers/public/images/avatars/a10.png', NULL),
+(3, 'Koplányi Bítia Anna', 'bituss@icloud.com', '$2y$10$xdEldv/83sxdZL0y9KqN4.Q95zvz4UuNTq0ILFTO3gINcP7tAQweu', 'provider', '2026-02-02 18:14:23', NULL, NULL),
+(4, 'Nagy Martina', 'nagymartina@gmail.com', '$2y$10$8jmw9LxEFS4q8XbI5oKhsegEcsi4bkJLqPbe0699tFMp2xW0BjP9y', 'provider', '2026-02-03 15:51:41', NULL, NULL);
 
 --
 -- Indexek a kiírt táblákhoz
@@ -323,7 +325,8 @@ ALTER TABLE `services`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `role_id` (`role_id`);
+  ADD INDEX `idx_deactivated_at` (`deactivated_at`),
+  ADD INDEX `idx_active_users` (`role`, `deactivated_at`);
 
 --
 -- A kiírt táblák AUTO_INCREMENT értéke
@@ -381,7 +384,7 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=100;
 
 --
 -- Megkötések a kiírt táblákhoz
@@ -422,11 +425,6 @@ ALTER TABLE `providers`
   ADD CONSTRAINT `providers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `providers_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`);
 
---
--- Megkötések a táblához `users`
---
-ALTER TABLE `users`
-  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

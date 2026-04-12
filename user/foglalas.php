@@ -1,9 +1,6 @@
 <?php
 include '../config/db.php';
 session_start();
-// feltételezzük: $_SESSION['user_id'] létezik
-
-
 if (isset($_POST['lemond'])) {
 $id = $_POST['id'];
 $conn->query("DELETE FROM appointments WHERE id=$id");

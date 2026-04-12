@@ -2,30 +2,22 @@
 <?php
 $pdo = new PDO('mysql:host=localhost;dbname=idopont_foglalas;charset=utf8mb4','root','',
   [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-
 $msg = '';
-
-// --- Lemondás ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_id'])) {
   $id = (int)$_POST['cancel_id'];
   $pdo->prepare("UPDATE bookings SET cancelled_at = NOW() WHERE id = ? AND cancelled_at IS NULL")
       ->execute([$id]);
   $msg = 'success:Foglalás lemondva.';
 }
-
-// --- Törlés ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
   $id = (int)$_POST['delete_id'];
   $pdo->prepare("DELETE FROM bookings WHERE id = ?")->execute([$id]);
   $msg = 'success:Foglalás törölve.';
 }
-
-// --- Szűrés ---
 $filter = $_GET['status'] ?? 'all';
 $where = '';
 if ($filter === 'active')    $where = 'WHERE b.cancelled_at IS NULL';
 if ($filter === 'cancelled') $where = 'WHERE b.cancelled_at IS NOT NULL';
-
 $bookings = $pdo->query("
   SELECT b.id, u.name AS user_name, p.business_name, b.booking_time,
          b.cancelled_at, b.created_at, ss.name AS sub_service
@@ -37,20 +29,16 @@ $bookings = $pdo->query("
   ORDER BY b.created_at DESC
 ")->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <h1>Foglalások</h1>
-
 <?php if ($msg): ?>
   <?php [$type,$text] = explode(':', $msg, 2); ?>
   <div class="admin-alert <?= $type ?>"><?= htmlspecialchars($text) ?></div>
 <?php endif; ?>
-
 <div class="admin-form">
   <a href="?status=all"       class="btn-admin <?= $filter==='all'       ?'primary':'ghost' ?>">Mind</a>
   <a href="?status=active"    class="btn-admin <?= $filter==='active'    ?'primary':'ghost' ?>">Aktívak</a>
   <a href="?status=cancelled" class="btn-admin <?= $filter==='cancelled' ?'primary':'ghost' ?>">Lemondottak</a>
 </div>
-
 <div class="admin-table-wrap">
   <table class="admin-table">
     <thead>
@@ -100,5 +88,4 @@ $bookings = $pdo->query("
     </tbody>
   </table>
 </div>
-
 <?php include __DIR__ . '/admin_footer.php'; ?>

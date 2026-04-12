@@ -1,16 +1,12 @@
 <?php
 session_start();
-
 $mysqli = new mysqli("localhost", "root", "", "idopont_foglalas");
 if ($mysqli->connect_error) die("Kapcsolódási hiba: " . $mysqli->connect_error);
 $mysqli->set_charset("utf8mb4");
-
-// provider ne lássa
 if (isset($_SESSION['role']) && $_SESSION['role'] === 'provider') {
   header("Location: /Smartbookers/business/provider_place.php");
   exit;
 }
-
 function slugify_hu(string $s): string {
   $s = trim(mb_strtolower($s, 'UTF-8'));
   $map = [
@@ -22,35 +18,28 @@ function slugify_hu(string $s): string {
   $s = trim($s, '-');
   return $s;
 }
-
 $slug = trim((string)($_GET['slug'] ?? ''));
 if ($slug === '') {
   header("Location: /Smartbookers/public/index.php");
   exit;
 }
-
 $subFilterSlug = trim((string)($_GET['sub'] ?? ''));
 $subFilterSlug = preg_replace('/[^a-z0-9\-]/', '', strtolower($subFilterSlug));
-
 $stI = $mysqli->prepare("SELECT id, name, description, slug FROM industries WHERE slug=? AND is_active=1 LIMIT 1");
 $stI->bind_param("s", $slug);
 $stI->execute();
 $industry = $stI->get_result()->fetch_assoc();
-
 include '../includes/header.php';
-
 if (!$industry) {
   http_response_code(404);
   echo "<div style='padding:40px; text-align:center;'>Karbantartás alatt...</div>";
   include '../includes/footer.php';
   exit;
 }
-
 $defaultAvatar = "/Smartbookers/public/images/avatars/a1.png";
 $logged_in = isset($_SESSION['role'], $_SESSION['user_id']);
 $role = $logged_in ? (string)$_SESSION['role'] : '';
 $isUser = $logged_in && $role === 'user';
-
 $slugToServiceName = [
   'fodraszat' => 'Fodrászat',
   'mukorom'   => 'Műköröm',
@@ -58,22 +47,17 @@ $slugToServiceName = [
   'masszazs'  => 'Masszázs',
   'kozmetika' => 'Kozmetikus',
 ];
-
 $serviceName = $slugToServiceName[$industry['slug']] ?? $industry['name'];
-
 $stS = $mysqli->prepare("SELECT id FROM services WHERE name=? LIMIT 1");
 $stS->bind_param("s", $serviceName);
 $stS->execute();
 $serviceRow = $stS->get_result()->fetch_assoc();
 $serviceId = (int)($serviceRow['id'] ?? 0);
-
 if ($serviceId <= 0) {
   echo "<div style='padding:40px; text-align:center;'>Ehhez az iparághoz nincs beállítva szolgáltatás (service).</div>";
   include '../includes/footer.php';
   exit;
 }
-
-/* 1) MINDEN alszolgáltatás mindig jön a DB-ből */
 $subServices = [];
 $stSub = $mysqli->prepare("SELECT id, name FROM sub_services WHERE service_id=? ORDER BY name ASC");
 $stSub->bind_param("i", $serviceId);
@@ -83,8 +67,6 @@ while ($r = $rsSub->fetch_assoc()) {
   $r['slug'] = slugify_hu((string)$r['name']);
   $subServices[] = $r;
 }
-
-// sub filter id
 $subFilterId = 0;
 if ($subFilterSlug !== '') {
   foreach ($subServices as $ss) {
@@ -94,8 +76,6 @@ if ($subFilterSlug !== '') {
     }
   }
 }
-
-/* 2) Szabad idők lekérése (csak időpontok), és hozzárendelés sub_service_id szerint */
 $sql = "
   SELECT
     a.sub_service_id,
@@ -108,13 +88,11 @@ $sql = "
         COALESCE(p.hazszam,''), ', ',
         COALESCE(t.nev,'')
     ) AS location,  -- <-- ide jön a helyszín
-
     a.id AS availability_id,
     a.slot_date,
     a.start_time,
     a.end_time,
     a.slot_minutes
-
   FROM provider_availability a
   JOIN providers p
     ON p.id = a.provider_id
@@ -124,14 +102,12 @@ $sql = "
     ON b.provider_id = p.id
    AND b.booking_time = CONCAT(a.slot_date, ' ', a.start_time)
    AND b.cancelled_at IS NULL
-
   WHERE a.is_active = 1
     AND p.service_id = ?
     AND a.sub_service_id IS NOT NULL
     AND CONCAT(a.slot_date, ' ', a.start_time) >= NOW()
     AND b.id IS NULL
     " . ($subFilterId > 0 ? "AND a.sub_service_id = ?" : "") . "
-
   ORDER BY a.sub_service_id ASC, p.business_name ASC, a.slot_date ASC, a.start_time ASC
 ";
 if ($subFilterId > 0) {
@@ -143,25 +119,21 @@ if ($subFilterId > 0) {
 }
 $st->execute();
 $res = $st->get_result();
-
-$bySub = []; // sub_service_id -> providers list
+$bySub = []; 
 while ($row = $res->fetch_assoc()) {
   $ssid = (int)$row['sub_service_id'];
   $pid  = (int)$row['provider_id'];
-
   if (!isset($bySub[$ssid])) $bySub[$ssid] = [];
-
   if (!isset($bySub[$ssid][$pid])) {
     $bySub[$ssid][$pid] = [
       'provider_id' => $pid,
       'business_name' => $row['business_name'],
       'avatar' => $row['provider_avatar'] ?: $defaultAvatar,
       'bio' => $row['bio'],
-      'location' => $row['location'], // <-- ide jött
+      'location' => $row['location'], 
       'slots' => []
     ];
   }
-
   $bySub[$ssid][$pid]['slots'][] = [
     'availability_id' => (int)$row['availability_id'],
     'slot_date' => $row['slot_date'],
@@ -191,8 +163,6 @@ while ($row = $res->fetch_assoc()) {
     inset 0 1px 0 rgba(255,255,255,0.08);
   overflow: hidden;
 }
-
-/* finom fény effekt */
 .heros::before{
   content:"";
   position:absolute;
@@ -203,14 +173,12 @@ while ($row = $res->fetch_assoc()) {
   background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%);
   transform: rotate(20deg);
 }
-
 .heros h1{
   font-size: 38px;
   font-weight: 900;
   margin: 0 0 16px;
   letter-spacing: -1px;
 }
-
 .heros p{
   font-size: 17px;
   opacity: 0.92;
@@ -229,20 +197,16 @@ while ($row = $res->fetch_assoc()) {
     font-size: 15px;
   }
 }
-
     .section{margin-top:18px;background:rgba(255,255,255,0.92);border-radius:18px;padding:18px;box-shadow:0 10px 25px rgba(0,0,0,.10);}
     .sectionTitle{margin:0 0 10px;font-weight:900;color:#0f172a;font-size:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
     .sectionHint{font-size:12px;color:#64748b;font-weight:800;margin:0 0 14px;}
-
     .grid{display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:14px;}
     .card{background:rgba(255,255,255,0.92);border-radius:18px;padding:16px;box-shadow:0 10px 25px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:12px;border:1px solid rgba(15,23,42,0.08);}
-
     .top{display:flex;gap:12px;align-items:center;}
     .av{width:56px;height:56px;border-radius:999px;border:3px solid rgba(36,37,110,.18);object-fit:cover;background:#fff;flex:0 0 auto;}
     .meta{min-width:0; flex:1;}
     .name{font-weight:900;color:#0f172a;margin:0;font-size:15px;}
     .bio{margin:4px 0 0;color:#64748b;font-size:13px;line-height:1.35;}
-
     .slotsTitle{font-weight:900;color:#0f172a;font-size:13px;margin:4px 0 0;}
     .slots{display:flex;flex-direction:column;gap:10px;}
     .slot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1px solid rgba(15,23,42,0.10);background:rgba(15,23,42,0.02);}
@@ -260,7 +224,6 @@ while ($row = $res->fetch_assoc()) {
   justify-content:center;
   z-index:9999;
 }
-
 .modalBox{
   background: #fff;
   padding: 30px;
@@ -270,7 +233,6 @@ while ($row = $res->fetch_assoc()) {
   width: 90%;
   box-shadow: 0 25px 60px rgba(0,0,0,0.3);
 }
-
 .modalBox .icon{
   width:60px;
   height:60px;
@@ -282,7 +244,6 @@ while ($row = $res->fetch_assoc()) {
   font-size:28px;
   margin:0 auto 10px;
 }
-
     @media (max-width: 900px){.grid{grid-template-columns:repeat(2, minmax(0, 1fr));}}
     @media (max-width: 560px){.grid{grid-template-columns:1fr;}}
     .spinner{
@@ -294,7 +255,6 @@ while ($row = $res->fetch_assoc()) {
   animation: spin 1s linear infinite;
   margin:0 auto;
 }
-
 @keyframes spin{
   0%{transform:rotate(0deg);}
   100%{transform:rotate(360deg);}
@@ -316,19 +276,15 @@ IPARÁG
       <h1><?= htmlspecialchars($industry['name'], ENT_QUOTES, 'UTF-8') ?></h1>
       <p><?= htmlspecialchars($industry['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></p>
     </div>
-
     <?php foreach ($subServices as $ss): ?>
       <?php
         $ssid = (int)$ss['id'];
         $secName = (string)$ss['name'];
         $secSlug = (string)$ss['slug'];
-
         if ($subFilterId > 0 && $ssid !== $subFilterId) continue;
-
         $providers = $bySub[$ssid] ?? [];
         $sectionId = "sub-" . htmlspecialchars($secSlug, ENT_QUOTES, 'UTF-8');
       ?>
-
       <div class="section" id="<?= $sectionId ?>">
         <div class="sectionTitle">
           <span><?= htmlspecialchars($secName, ENT_QUOTES, 'UTF-8') ?></span>
@@ -336,8 +292,6 @@ IPARÁG
             <?= count($providers) ?> Szolgáltató
           </span>
         </div>
-
-       
         <?php if (count($providers) === 0): ?>
           <div class="empty">Jelenleg nincs szabad időpont ennél az alszolgáltatásnál.</div>
         <?php else: ?>
@@ -354,9 +308,7 @@ IPARÁG
 </p>
                   </div>
                 </div>
-
                 <div class="slotsTitle">Szabad időpontok</div>
-
                 <div class="slots">
                   <?php
                     $shown = 0;
@@ -367,7 +319,6 @@ IPARÁG
                   ?>
                     <div class="slot">
                       <div class="dt"><?= htmlspecialchars($dt, ENT_QUOTES, 'UTF-8') ?></div>
-
                       <?php if ($isUser): ?>
                         <button class="btn"
   onclick="openBookingConfirm(
@@ -383,31 +334,24 @@ IPARÁG
                       <?php endif; ?>
                     </div>
                   <?php endforeach; ?>
-
                   <?php if (count($p['slots']) > 6): ?>
                     <div style="color:#64748b;font-size:12px;font-weight:800;">
                       + <?= (int)(count($p['slots']) - 6) ?> további szabad időpont
                     </div>
                   <?php endif; ?>
                 </div>
-
               </div>
             <?php endforeach; ?>
           </div>
         <?php endif; ?>
       </div>
     <?php endforeach; ?>
-
   </div>
   <div id="bookingModal" class="modalOverlay" style="display:none;">
   <div class="modalBox">
-
     <div class="icon" style="background:#24256e;">?</div>
-
     <h2>Időpont foglalása</h2>
-
     <p id="bookingText" style="font-weight:600;"></p>
-
     <div style="display:flex; gap:10px; justify-content:center;">
       <button onclick="confirmBooking()" style="background:#16a34a;">Igen</button>
       <button onclick="closeBookingModal()">Mégse</button>
@@ -416,45 +360,30 @@ IPARÁG
   <div class="spinner"></div>
   <p style="margin-top:10px; font-weight:700;">Foglalás folyamatban...</p>
 </div>
-
   </div>
 </div>
   <?php include '../includes/footer.php'; ?>
-
- 
   <script>
     let bookingUrl = null;
-
 function openBookingConfirm(id, datetime){
   bookingUrl = "/Smartbookers/user/book.php?availability_id=" + id;
-
   document.getElementById('bookingText').innerHTML =
     "Biztosan lefoglalod ezt az időpontot?<br><strong>" + datetime + "</strong>";
-
   document.getElementById('bookingModal').style.display = 'flex';
 }
-
 function closeBookingModal(){
   document.getElementById('bookingModal').style.display = 'none';
 }
-
 function confirmBooking(){
   if(!bookingUrl) return;
-
-  // gombok eltüntetése
   document.querySelectorAll('#bookingModal button').forEach(btn => {
     btn.style.display = 'none';
   });
-
-  // loader mutatása
   document.getElementById('bookingLoader').style.display = 'block';
-
-  // kis delay UX miatt
   setTimeout(() => {
     window.location.href = bookingUrl;
   }, 800);
 }
-
     const el = document.getElementById("sub-<?= htmlspecialchars($subFilterSlug, ENT_QUOTES, 'UTF-8') ?>");
     if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
   </script>
@@ -464,6 +393,5 @@ const el = document.getElementById("sub-<?= htmlspecialchars($subFilterSlug, ENT
 if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
 </script>
 <?php endif; ?>
-  
 </body>
 </html>

@@ -1,44 +1,25 @@
 <?php
 declare(strict_types=1);
 session_start();
-
-/* =========================
-   Csak bejelentkezett USER
-========================= */
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'user') {
   header("Location: /Smartbookers/public/login.php");
   exit;
 }
-
 $mysqli = new mysqli("localhost", "root", "", "idopont_foglalas");
 if ($mysqli->connect_error) die("Kapcsolódási hiba: " . $mysqli->connect_error);
 $mysqli->set_charset("utf8mb4");
-
-// Ne dobjon Fatal-t mysqli_sql_exception-re: mi kezeljük
 mysqli_report(MYSQLI_REPORT_OFF);
-
 $user_id = (int)$_SESSION['user_id'];
-
-/* =========================
-   10 előre definiált avatar
-========================= */
 $avatars = [];
 for ($i = 1; $i <= 10; $i++) $avatars[] = "/Smartbookers/public/images/avatars/a{$i}.png";
-
-/* =========================
-   Slot generálás (nyitvatartás -> idősávok)
-========================= */
 function generateSlotsForDay(string $day, string $startTime, string $endTime, int $slotMinutes): array {
   $slots = [];
   if ($slotMinutes <= 0) return $slots;
-
   $start = DateTime::createFromFormat('Y-m-d H:i:s', $day . ' ' . $startTime);
   $end   = DateTime::createFromFormat('Y-m-d H:i:s', $day . ' ' . $endTime);
   if (!$start || !$end) return $slots;
-
   $interval = new DateInterval('PT' . $slotMinutes . 'M');
   $cursor = clone $start;
-
   while (true) {
     $next = (clone $cursor)->add($interval);
     if ($next > $end) break;
@@ -47,52 +28,34 @@ function generateSlotsForDay(string $day, string $startTime, string $endTime, in
   }
   return $slots;
 }
-
 function hasColumn(mysqli $db, string $table, string $column): bool {
   $q = $db->prepare("SHOW COLUMNS FROM `$table` LIKE ?");
-
   if (!$q) {
-    return false; // vagy logolhatod: $db->error
+    return false; 
   }
-
   $q->bind_param("s", $column);
   $q->execute();
   $r = $q->get_result();
-
   return ($r && $r->num_rows > 0);
 }
-
-/* =========================
-   User adatok
-========================= */
 $stmt = $mysqli->prepare("SELECT id, name, email, avatar FROM users WHERE id=? LIMIT 1");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 if (!$user) die("Felhasználó nem található.");
-
 $currentAvatar = !empty($user['avatar']) ? (string)$user['avatar'] : "/Smartbookers/public/images/avatars/a1.png";
-
 $success = $_SESSION['success'] ?? "";
 unset($_SESSION['success']);
 $error = "";
-
-/* dátum limit: ma -> +6 hónap */
 $today  = date('Y-m-d');
 $maxDay = date('Y-m-d', strtotime('+6 months'));
-
-/* =========================
-   AVATAR MENTÉS
-========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_avatar'])) {
   $newAvatar = (string)($_POST['avatar'] ?? '');
-
   if (!in_array($newAvatar, $avatars, true)) {
     $error = "Érvénytelen avatar választás.";
   } else {
     $st = $mysqli->prepare("UPDATE users SET avatar=? WHERE id=? LIMIT 1");
     $st->bind_param("si", $newAvatar, $user_id);
-
     if ($st->execute()) {
       $success = "Profilkép frissítve!";
       $currentAvatar = $newAvatar;
@@ -102,13 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_avatar'])) {
     }
   }
 }
-
-/* =========================
-   FOGLALÁS LEMONDÁS
-========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') === 'cancel_booking') {
   $bookingId = (int)($_POST['booking_id'] ?? 0);
-
   if ($bookingId <= 0) {
     $error = "Érvénytelen foglalás azonosító.";
   } else {
@@ -121,7 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
       LIMIT 1
     ");
     $st->bind_param("ii", $bookingId, $user_id);
-
     if ($st->execute() && $st->affected_rows > 0) {
       $success = "Foglalás lemondva.";
     } else {
@@ -129,26 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
     }
   }
 }
-
-/* =========================
-   SZOLGÁLTATÁSOK LISTÁJA
-========================= */
 $services = [];
 $resS = $mysqli->query("SELECT id, name FROM services ORDER BY name ASC");
 if ($resS) while ($row = $resS->fetch_assoc()) $services[] = $row;
-
-/* =========================
-   Választások (POST/GET)
-========================= */
 $selectedServiceId    = (int)($_POST['search_service_id'] ?? ($_GET['service_id'] ?? 0));
 $selectedSubServiceId = (int)($_POST['search_sub_service_id'] ?? ($_GET['sub_service_id'] ?? 0));
-
 $searchDay = (string)($_POST['search_day'] ?? ($_GET['day'] ?? $today));
 $searchDay = preg_replace('/[^0-9\-]/', '', $searchDay);
-
-/* =========================
-   ALSZOLGÁLTATÁSOK listája a kiválasztott service-re
-========================= */
 $subServices = [];
 if ($selectedServiceId > 0) {
   $stSS = $mysqli->prepare("SELECT id, name FROM sub_services WHERE service_id=? ORDER BY name ASC");
@@ -156,7 +100,6 @@ if ($selectedServiceId > 0) {
   $stSS->execute();
   $rsSS = $stSS->get_result();
   while ($r = $rsSS->fetch_assoc()) $subServices[] = $r;
-
   if ($selectedSubServiceId > 0) {
     $ok = false;
     foreach ($subServices as $ss) {
@@ -167,16 +110,10 @@ if ($selectedServiceId > 0) {
 } else {
   $selectedSubServiceId = 0;
 }
-
-/* =========================
-   SLOT KERESÉS
-========================= */
 $availableSlots = [];
 $searched = false;
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') === 'search_slots') {
   $searched = true;
-
   if ($selectedServiceId <= 0) {
     $error = "Válassz szolgáltatást!";
   } elseif ($selectedSubServiceId <= 0) {
@@ -188,7 +125,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
   } elseif ($searchDay > $maxDay) {
     $error = "Csak fél évre előre lehet időpontot nézni.";
   } else {
-
     $stA = $mysqli->prepare("
       SELECT
         a.provider_id,
@@ -207,11 +143,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
     $stA->bind_param("is", $selectedSubServiceId, $searchDay);
     $stA->execute();
     $resA = $stA->get_result();
-
     $byProvider = [];
     while ($a = $resA->fetch_assoc()) {
       $pid = (int)$a['provider_id'];
-
       if (!isset($byProvider[$pid])) {
         $byProvider[$pid] = [
           'provider_id' => $pid,
@@ -220,30 +154,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
           'allSlots' => []
         ];
       }
-
       $slots = generateSlotsForDay(
         $searchDay,
         (string)$a['start_time'],
         (string)$a['end_time'],
         (int)$a['slot_minutes']
       );
-
       $byProvider[$pid]['allSlots'] = array_merge($byProvider[$pid]['allSlots'], $slots);
     }
-
     if (count($byProvider) === 0) {
       $availableSlots = [];
     } else {
-
       $dayStart = $searchDay . " 00:00:00";
       $dayEnd   = $searchDay . " 23:59:59";
-
       $providerIds = array_keys($byProvider);
       $placeholders = implode(',', array_fill(0, count($providerIds), '?'));
-
       $types = str_repeat('i', count($providerIds)) . "ss";
       $params = array_merge($providerIds, [$dayStart, $dayEnd]);
-
       $sqlB = "
         SELECT provider_id, booking_time
         FROM bookings
@@ -251,17 +178,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
           AND provider_id IN ($placeholders)
           AND booking_time BETWEEN ? AND ?
       ";
-
       $stB = $mysqli->prepare($sqlB);
-
       $bind = [];
       $bind[] = $types;
       foreach ($params as $k => $v) $bind[] = &$params[$k];
       call_user_func_array([$stB, 'bind_param'], $bind);
-
       $stB->execute();
       $resB = $stB->get_result();
-
       $taken = [];
       while ($b = $resB->fetch_assoc()) {
         $pid = (int)$b['provider_id'];
@@ -269,21 +192,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
         if (!isset($taken[$pid])) $taken[$pid] = [];
         $taken[$pid][$bt] = true;
       }
-
       $nowTs = time();
-
       foreach ($byProvider as $pid => $p) {
         $allSlots = $p['allSlots'];
         sort($allSlots);
-
         foreach ($allSlots as $slot) {
           if (!empty($taken[$pid][$slot])) continue;
-
           if ($searchDay === $today) {
             $slotTs = strtotime($slot);
             if ($slotTs !== false && $slotTs < $nowTs) continue;
           }
-
           $availableSlots[] = [
             'provider_id' => (int)$p['provider_id'],
             'business_name' => (string)$p['business_name'],
@@ -292,7 +210,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
           ];
         }
       }
-
       usort($availableSlots, function($a, $b){
         $t1 = strtotime($a['slot']); $t2 = strtotime($b['slot']);
         if ($t1 === $t2) return strcmp($a['business_name'], $b['business_name']);
@@ -301,25 +218,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
     }
   }
 }
-
-/* =========================
-   FOGLALÁS LÉTREHOZÁS + CHAT + AUTO ÜZENET
-   !!! CSAK create_booking esetén !!!
-========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') === 'create_booking') {
-
   $providerId   = (int)($_POST['provider_id'] ?? 0);
   $serviceId    = (int)($_POST['service_id'] ?? 0);
   $subServiceId = (int)($_POST['sub_service_id'] ?? 0);
   $day          = preg_replace('/[^0-9\-]/', '', (string)($_POST['day'] ?? $today));
   $slot         = (string)($_POST['slot_datetime'] ?? '');
-
-  // visszatöltés
   $selectedServiceId    = $serviceId;
   $selectedSubServiceId = $subServiceId;
   $searchDay            = $day;
   $searched = true;
-
   if ($serviceId <= 0 || $subServiceId <= 0 || $providerId <= 0) {
     $error = "Hiányzó választás (szolgáltatás/alszolgáltatás).";
   } elseif (!preg_match('/^\d{4}\-\d{2}\-\d{2}$/', $day) || $day < $today) {
@@ -329,16 +237,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
   } elseif (!preg_match('/^\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}$/', $slot)) {
     $error = "Érvénytelen idősáv.";
   } else {
-
     $mysqli->begin_transaction();
     try {
-      // 1) booking insert
       $ins = $mysqli->prepare("
         INSERT INTO bookings (provider_id, user_id, booking_time, sub_service_id)
         VALUES (?, ?, ?, ?)
       ");
       $ins->bind_param("iisi", $providerId, $user_id, $slot, $subServiceId);
-
       if (!$ins->execute()) {
         if ($mysqli->errno === 1062) {
           throw new Exception("Ez az időpont már foglalt.");
@@ -346,21 +251,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
         throw new Exception("Nem sikerült foglalni.");
       }
       $bookingId = (int)$mysqli->insert_id;
-
-      // 2) conversation upsert (NE duplikálódjon)
       $conv = $mysqli->prepare("
         INSERT INTO conversations (user_id, provider_id)
         VALUES (?, ?)
         ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
       ");
       $conv->bind_param("ii", $user_id, $providerId);
-
       if (!$conv->execute()) {
         throw new Exception("Nem sikerült a beszélgetés létrehozása.");
       }
       $conversationId = (int)$mysqli->insert_id;
-
-      // 3) meta az üzenethez
       $meta = $mysqli->prepare("
         SELECT p.business_name, ss.name AS sub_service_name
         FROM providers p
@@ -371,19 +271,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
       $meta->bind_param("ii", $subServiceId, $providerId);
       $meta->execute();
       $m = $meta->get_result()->fetch_assoc();
-
       $providerName   = (string)($m['business_name'] ?? '-');
       $subServiceName = (string)($m['sub_service_name'] ?? '-');
-
-      // 4) auto üzenet: USER küldi a providernek
       $txt =
         "Szia!\n" .
         "Lefoglaltam egy időpontot.\n" .
         "Időpont: " . date("Y-m-d H:i", strtotime($slot)) . "\n" .
         "Szolgáltatás: " . $subServiceName . "\n" .
         "Szolgáltató: " . $providerName;
-
-      // 1 db booking_auto per conversation (update/insert)
       $chkMsg = $mysqli->prepare("
         SELECT id
         FROM messages
@@ -394,7 +289,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
       $chkMsg->bind_param("i", $conversationId);
       $chkMsg->execute();
       $existing = $chkMsg->get_result()->fetch_assoc();
-
       if ($existing) {
         $msgId = (int)$existing['id'];
         $upd = $mysqli->prepare("
@@ -403,7 +297,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
           WHERE id=? AND conversation_id=?
         ");
         $upd->bind_param("sii", $txt, $msgId, $conversationId);
-
         if (!$upd->execute()) {
           throw new Exception("Nem sikerült az automata üzenet frissítése.");
         }
@@ -415,19 +308,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
             (?, ?, 0, 'booking_auto', 1, 0)
         ");
         $msg->bind_param("is", $conversationId, $txt);
-
         if (!$msg->execute()) {
           throw new Exception("Nem sikerült az automata üzenet mentése.");
         }
       }
-
       $mysqli->commit();
-
-      // chatre dobás
       $createdConversationId = $conversationId;
       $_SESSION['success'] = "Foglalás sikeresen létrehozva.";
       $_SESSION['open_chat'] = $conversationId;
-      
       header("Location: /Smartbookers/public/profile.php");
       exit;
     } catch (Throwable $e) {
@@ -436,10 +324,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') ==
     }
   }
 }
-
-/* =========================
-   SAJÁT FOGLALÁSOK (csak AKTÍV)
-========================= */
 $myAppointments = [];
 $st = $mysqli->prepare("
   SELECT
@@ -462,8 +346,6 @@ $st->bind_param("i", $user_id);
 $st->execute();
 $res = $st->get_result();
 while ($row = $res->fetch_assoc()) $myAppointments[] = $row;
-
-/* HEADER */
 include '../includes/header.php';
 ?>
 <!DOCTYPE html>
@@ -472,12 +354,10 @@ include '../includes/header.php';
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Profilom</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https:
 </head>
 <body>
-
 <style>
-  
   body{font-family: Inter, sans-serif;background: linear-gradient(135deg, #24256e, #ffffff);margin:0;min-height:100vh;}
   .wrap{max-width:1200px; margin:30px auto; padding:0 12px;}
   .title{color:#fff; text-align:center; margin:0 0 18px;}
@@ -487,7 +367,6 @@ include '../includes/header.php';
   .userMeta h2{margin:0; color:#0f172a; font-size:20px;}
   .userMeta p{margin:4px 0 0; color:#475569;}
   .msg{margin-top:10px; font-weight:800;}
-  
   .err{color:#ef4444;}
   .avatarDropdown{ width:100%; margin-top:12px; }
   .avatarToggle{
@@ -514,7 +393,6 @@ include '../includes/header.php';
     background: linear-gradient(135deg,#24256e,#000);
     color:#fff;font-weight:900;cursor:pointer;
   }
-  
   .dash{display:flex;gap:18px;margin-top:22px;flex-wrap:wrap;}
   .col{flex:1; min-width:200px;}
   .h3{color:#fff; text-align:center; margin:0 0 10px; font-weight:900;}
@@ -525,7 +403,6 @@ include '../includes/header.php';
   .input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #cbd5e1;margin-top:8px;outline:none;}
   .btnLink{display:block;margin-top:10px;padding:12px;border-radius:12px;font-weight:900;text-align:center;color:#fff;background: linear-gradient(135deg,#24256e,#000);text-decoration:none;border:0;cursor:pointer;width:100%;}
   .cancelBtn{display:block;margin-top:10px;padding:12px;border-radius:12px;font-weight:900;text-align:center;color:#fff;background: linear-gradient(135deg,#ef4444,#991b1b);border:0;width:100%;cursor:pointer;}
-
   .slotGrid{display:grid;grid-template-columns: repeat(2, minmax(0, 1fr));gap:10px;margin-top:12px;}
   .slotBtn{
     padding:10px 12px;border-radius:12px;border:0;cursor:pointer;
@@ -541,16 +418,13 @@ include '../includes/header.php';
     .userMeta{text-align:center;}
   }
 </style>
-
 <?php if (!empty($success)): ?>
 <div class="modalOverlay" id="successModal">
   <div class="modalBox">
     <div class="icon">✔</div>
-    
     <h2>
     <?php
 $title = "Sikeres művelet";
-
 if (str_contains($success, 'lemondva')) {
   $title = "Sikeres lemondás";
 }
@@ -560,14 +434,11 @@ elseif (str_contains($success, 'bejelentkezés')) {
 ?>
 <h2><?= $title ?></h2>
     </h2>
-
     <p><?= htmlspecialchars($success) ?></p>
-
     <button onclick="closeModal()">Rendben</button>
   </div>
 </div>
 <?php endif; ?>
-
 <style>
 .modalOverlay{
   position: fixed;
@@ -580,7 +451,6 @@ elseif (str_contains($success, 'bejelentkezés')) {
   z-index:9999;
   animation: fadeIn 0.3s ease;
 }
-
 .modalBox{
   background: #ffffff;
   padding: 30px 40px;
@@ -591,20 +461,17 @@ elseif (str_contains($success, 'bejelentkezés')) {
   box-shadow: 0 25px 60px rgba(0,0,0,0.3);
   animation: scaleIn 0.3s ease;
 }
-
 .modalBox h2{
   margin: 10px 0;
   font-size: 22px;
   font-weight: 900;
   color: #0f172a;
 }
-
 .modalBox p{
   color:#64748b;
   margin-bottom:20px;
   font-size:14px;
 }
-
 .modalBox .icon{
   width:60px;
   height:60px;
@@ -617,7 +484,6 @@ elseif (str_contains($success, 'bejelentkezés')) {
   font-size:28px;
   margin:0 auto 10px;
 }
-
 .modalBox button{
   padding:10px 18px;
   border:none;
@@ -627,59 +493,45 @@ elseif (str_contains($success, 'bejelentkezés')) {
   color:white;
   cursor:pointer;
 }
-
 .modalBox button:hover{
   opacity:0.9;
 }
-
-/* Animációk */
 @keyframes fadeIn{
   from{opacity:0;}
   to{opacity:1;}
 }
-
 @keyframes scaleIn{
   from{transform:scale(0.8); opacity:0;}
   to{transform:scale(1); opacity:1;}
 }
 </style>
-
 <script>
 function closeModal(){
   document.getElementById("successModal").style.display = "none";
 }
-
-/* URL tisztítás */
 if (window.location.search.includes("success=booking")) {
   window.history.replaceState({}, document.title, window.location.pathname);
 }
 </script>
-
-
 <div class="wrap">
   <h1 class="title">Profilom</h1>
-
   <div class="topCard">
     <img class="avatarNow" src="<?= htmlspecialchars($currentAvatar, ENT_QUOTES, 'UTF-8') ?>" alt="Profilkép">
     <div class="userMeta">
   <h2><?= htmlspecialchars((string)$user['name'], ENT_QUOTES, 'UTF-8') ?></h2>
   <p><?= htmlspecialchars((string)$user['email'], ENT_QUOTES, 'UTF-8') ?></p>
-
   <?php if($error): ?>
     <div class="msg err"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
   <?php endif; ?>
 </div>
-
     <form method="post" style="width:100%;">
       <input type="hidden" name="set_avatar" value="1">
       <input type="hidden" name="avatar" id="avatarInput" value="<?= htmlspecialchars($currentAvatar, ENT_QUOTES, 'UTF-8') ?>">
-
       <div class="avatarDropdown">
         <button type="button" class="avatarToggle" id="avatarToggle">
           <span>Profilkép választása</span>
           <span id="avatarArrow">▾</span>
         </button>
-
         <div class="avatarPanel" id="avatarPanel">
           <div class="grid" id="avatarGrid">
             <?php foreach($avatars as $av): ?>
@@ -691,7 +543,6 @@ if (window.location.search.includes("success=booking")) {
               </button>
             <?php endforeach; ?>
           </div>
-
           <div class="saveRow">
             <button class="saveBtn" type="submit">Profilkép mentése</button>
           </div>
@@ -699,20 +550,16 @@ if (window.location.search.includes("success=booking")) {
       </div>
     </form>
   </div>
-
   <div class="dash">
     <div class="col">
       <h3 class="h3">Saját időpontjaid</h3>
-
       <?php if(count($myAppointments) > 0): ?>
         <?php foreach($myAppointments as $appt): ?>
           <div class="card">
             <strong>
               <?= htmlspecialchars((string)(($appt['service_name'] ?: 'Szolgáltatás') . ($appt['sub_service_name'] ? ' — ' . $appt['sub_service_name'] : '')), ENT_QUOTES, 'UTF-8') ?>
             </strong><br>
-
             <?= date("Y-m-d H:i", strtotime((string)$appt['date_time'])) ?>
-
             <div class="meta">
               <strong>Szolgáltató:</strong>
               <?= htmlspecialchars((string)($appt['business_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
@@ -722,17 +569,13 @@ if (window.location.search.includes("success=booking")) {
             </div>
             <div id="confirmModal" class="modalOverlay" style="display:none;">
   <div class="modalBox">
-    
     <div class="icon" style="background:#ef4444;">!</div>
-
     <h2>Foglalás lemondása</h2>
     <p>Biztosan le szeretnéd mondani ezt az időpontot?</p>
-
     <div style="display:flex; gap:10px; justify-content:center;">
       <button onclick="submitCancel()" style="background:#ef4444;">Igen</button>
       <button onclick="closeConfirm()">Mégse</button>
     </div>
-
   </div>
 </div>
             <form method="post">
@@ -748,14 +591,9 @@ if (window.location.search.includes("success=booking")) {
         <p style="color:#fff; text-align:center;">Nincs aktív (jövőbeli) foglalásod.</p>
       <?php endif; ?>
     </div>
-
-    
      <!-- JOBB OSZLOP: Szabad időpontok -->
        <div class="appointments-column">
         <h3 class="h3">Válassz szolgáltatást</h3>
-
-
-
      <div style="margin-top:20px; text-align:center;  display: flex;
        flex-direction: column;
        gap: 20px;">
@@ -766,34 +604,26 @@ if (window.location.search.includes("success=booking")) {
       <a href="/Smartbookers/public/industry.php?slug=egeszseg" class="btn btn-primary btn-block">Egészség</a>
     </div>
   </div>
-
   </div>
 </div>
-
 <script>
-
 let currentForm = null;
-
 function openConfirm(btn){
   currentForm = btn.closest('form');
   document.getElementById('confirmModal').style.display = 'flex';
 }
-
 function closeConfirm(){
   document.getElementById('confirmModal').style.display = 'none';
 }
-
 function submitCancel(){
   if(currentForm){
     currentForm.submit();
   }
 }
-
 (function(){
   const toggle = document.getElementById('avatarToggle');
   const panel  = document.getElementById('avatarPanel');
   const arrow  = document.getElementById('avatarArrow');
-
   if(toggle && panel){
     toggle.addEventListener('click', () => {
       panel.classList.toggle('open');
@@ -802,26 +632,20 @@ function submitCancel(){
       }
     });
   }
-
   const grid = document.getElementById('avatarGrid');
   const input = document.getElementById('avatarInput');
   if(!grid || !input) return;
-
   grid.addEventListener('click', (e) => {
     const btn = e.target.closest('.avBtn');
     if(!btn) return;
-
     const av = btn.getAttribute('data-avatar');
     if(!av) return;
-
     input.value = av;
-
     grid.querySelectorAll('.avBtn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   });
 })();
 </script>
-
 <?php include '../includes/footer.php'; ?>
 </body>
 </html>

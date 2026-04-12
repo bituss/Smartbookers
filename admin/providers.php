@@ -2,25 +2,18 @@
 <?php
 $pdo = new PDO('mysql:host=localhost;dbname=idopont_foglalas;charset=utf8mb4','root','',
   [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-
 $msg = '';
-
-// --- Törlés ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
   $id = (int)$_POST['delete_id'];
-  // Provider rekord törlése + a hozzá tartozó user
   $userId = $pdo->prepare("SELECT user_id FROM providers WHERE id = ?");
   $userId->execute([$id]);
   $uid = $userId->fetchColumn();
-
   $pdo->prepare("DELETE FROM providers WHERE id = ?")->execute([$id]);
   if ($uid) {
     $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$uid]);
   }
   $msg = 'success:Szolgáltató törölve.';
 }
-
-// --- Keresés ---
 $search = trim($_GET['q'] ?? '');
 $where = '';
 $params = [];
@@ -28,7 +21,6 @@ if ($search !== '') {
   $where = "WHERE p.business_name LIKE :q OR u.name LIKE :q OR u.email LIKE :q";
   $params[':q'] = '%' . $search . '%';
 }
-
 $stmt = $pdo->prepare("
   SELECT p.id, p.business_name, u.name AS owner_name, u.email,
          s.name AS service_name, t.nev AS telepules, p.created_at
@@ -42,14 +34,11 @@ $stmt = $pdo->prepare("
 $stmt->execute($params);
 $providers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <h1>Szolgáltatók</h1>
-
 <?php if ($msg): ?>
   <?php [$type,$text] = explode(':', $msg, 2); ?>
   <div class="admin-alert <?= $type ?>"><?= htmlspecialchars($text) ?></div>
 <?php endif; ?>
-
 <form class="admin-form" method="get">
   <input class="admin-input" type="text" name="q" placeholder="Keresés cégnév, név vagy email..."
          value="<?= htmlspecialchars($search) ?>">
@@ -58,7 +47,6 @@ $providers = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <a href="/Smartbookers/admin/providers.php" class="btn-admin ghost">Összes</a>
   <?php endif; ?>
 </form>
-
 <div class="admin-table-wrap">
   <table class="admin-table">
     <thead>
@@ -96,5 +84,4 @@ $providers = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </tbody>
   </table>
 </div>
-
 <?php include __DIR__ . '/admin_footer.php'; ?>
