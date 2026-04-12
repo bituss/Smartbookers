@@ -130,7 +130,6 @@ if ($editId > 0) {
           <!-- Törlés -->
           <form method="post" style="display:inline;" onsubmit="return confirm('Biztosan törlöd?');">
             <input type="hidden" name="delete_id" value="<?= $i['id'] ?>">
-            <button class="btn-admin danger" type="submit">Törlés</button>
           </form>
         </td>
       </tr>
